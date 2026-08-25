@@ -1,4 +1,4 @@
-package com.mycompany.proyecto1;
+package proyecto1;
 
 public class Proyecto1 {
 
