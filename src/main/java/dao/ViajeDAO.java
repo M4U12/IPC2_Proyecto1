@@ -12,6 +12,7 @@ import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import modelos.Enums;
 
 public class ViajeDAO {
 
@@ -29,9 +30,9 @@ public class ViajeDAO {
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
-            
-            ps.setString(1, viaje.getTipoViaje());
-            ps.setString(2, viaje.getEstadoViaje());
+
+            ps.setString(1, viaje.getTipoViaje().name());
+            ps.setString(2, viaje.getEstadoViaje().name());
             ps.setInt(3, viaje.getIdBus());
             ps.setInt(4, viaje.getIdChofer());
 
@@ -116,18 +117,17 @@ public class ViajeDAO {
             throw new BDException("Error al registrar el viaje: " + e.getMessage(), e);
         }
     }
-    
+
     public List<Viaje> listarViajes(String estadoFiltro) throws BDException {
         List<Viaje> listaViajes = new ArrayList<>();
         String query = "SELECT * FROM viajes";
-        
+
         if (estadoFiltro != null && !estadoFiltro.isEmpty()) {
             query += " WHERE estado_viaje = ?";
         }
-        
-        try (Connection connection = conexionDB.getConection();
-             PreparedStatement ps = connection.prepareStatement(query)) {
-            
+
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+
             if (estadoFiltro != null && !estadoFiltro.isEmpty()) {
                 ps.setString(1, estadoFiltro);
             }
@@ -143,47 +143,45 @@ public class ViajeDAO {
         }
         return listaViajes;
     }
-    
+
     public boolean iniciarViaje(int idViaje, double kilometrajeSalida, LocalDateTime fechaHoraSalidaReal) throws BDException {
         String query = "UPDATE viajes SET estado_viaje = 'En Curso', kilometraje_salida = ?, fecha_hora_salida_real = ? WHERE id_viaje = ?";
-        
-        try (Connection connection = conexionDB.getConection();
-             PreparedStatement ps = connection.prepareStatement(query)) {
-            
+
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+
             ps.setDouble(1, kilometrajeSalida);
             ps.setTimestamp(2, Timestamp.valueOf(fechaHoraSalidaReal));
             ps.setInt(3, idViaje);
-            
+
             return ps.executeUpdate() > 0;
-            
+
         } catch (SQLException e) {
             throw new BDException("Error al iniciar el viaje: " + e.getMessage(), e);
         }
     }
-    
+
     public boolean finalizarViaje(int idViaje, double kilometrajeLlegada, double gastoCombustible, LocalDateTime fechaHoraLlegadaReal) throws BDException {
         String query = "UPDATE viajes SET estado_viaje = 'Finalizado', kilometraje_llegada = ?, gasto_combustible = ?, fecha_hora_llegada_real = ? WHERE id_viaje = ?";
-        
-        try (Connection connection = conexionDB.getConection();
-             PreparedStatement ps = connection.prepareStatement(query)) {
-            
+
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+
             ps.setDouble(1, kilometrajeLlegada);
             ps.setDouble(2, gastoCombustible);
             ps.setTimestamp(3, Timestamp.valueOf(fechaHoraLlegadaReal));
             ps.setInt(4, idViaje);
-            
+
             return ps.executeUpdate() > 0;
-            
+
         } catch (SQLException e) {
             throw new BDException("Error al finalizar el viaje: " + e.getMessage(), e);
         }
     }
-    
+
     private Viaje extraerViajeDeResultSet(ResultSet rs) throws SQLException {
         Viaje viaje = new Viaje();
         viaje.setIdViaje(rs.getInt("id_viaje"));
-        viaje.setTipoViaje(rs.getString("tipo_viaje"));
-        viaje.setEstadoViaje(rs.getString("estado_viaje"));
+        viaje.setTipoViaje(Enums.TipoViaje.valueOf(rs.getString("tipo_viaje")));
+        viaje.setEstadoViaje(Enums.EstadoViaje.valueOf(rs.getString("estado_viaje")));
         viaje.setIdBus(rs.getInt("id_bus"));
         viaje.setIdChofer(rs.getInt("id_chofer"));
 

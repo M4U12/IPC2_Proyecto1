@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
+import modelos.Enums;
 import modelos.Usuario;
 
 public class UsuarioDAO {
@@ -28,7 +30,7 @@ public class UsuarioDAO {
             ps.setString(5, usuario.getTelefono());
             ps.setString(6, usuario.getDireccion());
             ps.setBoolean(7, usuario.isEstado());
-            ps.setString(8, usuario.getRol());
+            ps.setString(8, usuario.getRol().name());
             ps.setInt(9, usuario.getIdUsuario());
 
             return ps.executeUpdate() > 0;
@@ -38,7 +40,7 @@ public class UsuarioDAO {
         }
     }
 
-    public Usuario buscarPorDpi(String dpi) throws BDException {
+    public Optional <Usuario> buscarPorDpi(String dpi) throws BDException {
         Usuario usuario = null;
         String query = "SELECT id_usuario, dpi, nombre, nit, telefono, direccion, estado, rol FROM usuarios WHERE dpi = ?";
 
@@ -56,14 +58,14 @@ public class UsuarioDAO {
                     usuario.setTelefono(rs.getString("telefono"));
                     usuario.setDireccion(rs.getString("direccion"));
                     usuario.setEstado(rs.getBoolean("estado"));
-                    usuario.setRol(rs.getString("rol"));
+                    usuario.setRol(Enums.RolUsuario.valueOf(rs.getString("rol")));
                 }
             }
         } catch (SQLException e) {
             throw new BDException("Error al buscar el usuario por DPI: " + e.getMessage(), e);
         }
 
-        return usuario;
+        return Optional.ofNullable(usuario);
     }
 
     public boolean actualizarPassword(String dpi, String nuevaPassword) throws BDException {
@@ -93,7 +95,7 @@ public class UsuarioDAO {
             ps.setString(5, usuario.getTelefono());
             ps.setString(6, usuario.getDireccion());
             ps.setBoolean(7, usuario.isEstado());
-            ps.setString(8, usuario.getRol());
+            ps.setString(8, usuario.getRol().name());
 
             return ps.executeUpdate() > 0;
 

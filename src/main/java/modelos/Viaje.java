@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 
 public class Viaje {
     private int idViaje;
-    private String tipoViaje;
-    private String estadoViaje;
+    private Enums.TipoViaje tipoViaje;
+    private Enums.EstadoViaje estadoViaje;
     private int idBus;
     private int idChofer;
     private Integer idRuta; 
@@ -29,7 +29,7 @@ public class Viaje {
     public Viaje() {
     }
 
-    public Viaje(int idViaje, String tipoViaje, String estadoViaje, int idBus, int idChofer, Integer idRuta, Integer idCliente, String origenPrivado, String destinoPrivado, Integer cantidadPasajerosPrivado, Double precioTotalPrivado, LocalDateTime fechaRetornoPrivado, LocalDateTime fechaHoraSalidaEstimada, LocalDateTime fechaHoraLlegadaEstimada, LocalDateTime fechaHoraSalidaReal, LocalDateTime fechaHoraLlegadaReal, Double kilometrajeSalida, Double kilometrajeLlegada, Double gastoCombustible) {
+    public Viaje(int idViaje, Enums.TipoViaje tipoViaje, Enums.EstadoViaje estadoViaje, int idBus, int idChofer, Integer idRuta, Integer idCliente, String origenPrivado, String destinoPrivado, Integer cantidadPasajerosPrivado, Double precioTotalPrivado, LocalDateTime fechaRetornoPrivado, LocalDateTime fechaHoraSalidaEstimada, LocalDateTime fechaHoraLlegadaEstimada, LocalDateTime fechaHoraSalidaReal, LocalDateTime fechaHoraLlegadaReal, Double kilometrajeSalida, Double kilometrajeLlegada, Double gastoCombustible) {
         this.idViaje = idViaje;
         this.tipoViaje = tipoViaje;
         this.estadoViaje = estadoViaje;
@@ -55,11 +55,11 @@ public class Viaje {
         return idViaje;
     }
 
-    public String getTipoViaje() {
+    public Enums.TipoViaje getTipoViaje() {
         return tipoViaje;
     }
 
-    public String getEstadoViaje() {
+    public Enums.EstadoViaje getEstadoViaje() {
         return estadoViaje;
     }
 
@@ -131,11 +131,11 @@ public class Viaje {
         this.idViaje = idViaje;
     }
 
-    public void setTipoViaje(String tipoViaje) {
+    public void setTipoViaje(Enums.TipoViaje tipoViaje) {
         this.tipoViaje = tipoViaje;
     }
 
-    public void setEstadoViaje(String estadoViaje) {
+    public void setEstadoViaje(Enums.EstadoViaje estadoViaje) {
         this.estadoViaje = estadoViaje;
     }
 

@@ -8,7 +8,7 @@ public class Chofer {
     private String nombre;
     private String foto; 
     private String numLicencia;
-    private String tipoLicencia;
+    private Enums.TipoLicencia tipoLicencia;
     private LocalDate fechaVencimientoLicencia;
     private String telefono;
     private double salarioBasePorViaje;
@@ -17,7 +17,7 @@ public class Chofer {
     public Chofer() {
     }
 
-    public Chofer(int idChofer, int idSucursal, String nombre, String foto, String numLicencia, String tipoLicencia, LocalDate fechaVencimientoLicencia, String telefono, double salarioBasePorViaje, boolean estado) {
+    public Chofer(int idChofer, int idSucursal, String nombre, String foto, String numLicencia, Enums.TipoLicencia tipoLicencia, LocalDate fechaVencimientoLicencia, String telefono, double salarioBasePorViaje, boolean estado) {
         this.idChofer = idChofer;
         this.idSucursal = idSucursal;
         this.nombre = nombre;
@@ -50,7 +50,7 @@ public class Chofer {
         return numLicencia;
     }
 
-    public String getTipoLicencia() {
+    public Enums.TipoLicencia getTipoLicencia() {
         return tipoLicencia;
     }
 
@@ -90,7 +90,7 @@ public class Chofer {
         this.numLicencia = numLicencia;
     }
 
-    public void setTipoLicencia(String tipoLicencia) {
+    public void setTipoLicencia(Enums.TipoLicencia tipoLicencia) {
         this.tipoLicencia = tipoLicencia;
     }
 

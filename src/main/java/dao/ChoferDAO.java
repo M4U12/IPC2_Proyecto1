@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import modelos.Chofer;
+import modelos.Enums;
 
 public class ChoferDAO {
 
@@ -28,7 +29,7 @@ public class ChoferDAO {
             ps.setString(2, chofer.getNombre());
             ps.setString(3, chofer.getFoto());
             ps.setString(4, chofer.getNumLicencia());
-            ps.setString(5, chofer.getTipoLicencia());
+            ps.setString(5, chofer.getTipoLicencia().name());
             ps.setDate(6, Date.valueOf(chofer.getFechaVencimientoLicencia()));
             ps.setString(7, chofer.getTelefono());
             ps.setDouble(8, chofer.getSalarioBasePorViaje());
@@ -61,7 +62,7 @@ public class ChoferDAO {
                             rs.getString("nombre"),
                             rs.getString("foto"),
                             rs.getString("num_licencia"),
-                            rs.getString("tipo_licencia"),
+                            Enums.TipoLicencia.valueOf(rs.getString("tipo_licencia")),
                             rs.getDate("fecha_vencimiento_licencia").toLocalDate(),
                             rs.getString("telefono"),
                             rs.getDouble("salario_base_por_viaje"),
@@ -85,7 +86,7 @@ public class ChoferDAO {
             ps.setString(2, chofer.getNombre());
             ps.setString(3, chofer.getFoto());
             ps.setString(4, chofer.getNumLicencia());
-            ps.setString(5, chofer.getTipoLicencia());
+            ps.setString(5, chofer.getTipoLicencia().name());
             ps.setDate(6, java.sql.Date.valueOf(chofer.getFechaVencimientoLicencia()));
             ps.setString(7, chofer.getTelefono());
             ps.setDouble(8, chofer.getSalarioBasePorViaje());

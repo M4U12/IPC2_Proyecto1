@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import modelos.Sucursal;
 
 public class SucursalDAO {
@@ -74,7 +75,7 @@ public class SucursalDAO {
         }
     }
 
-    public Sucursal buscarSucursalPorId(int idSucursal) throws BDException {
+    public Optional<Sucursal> buscarSucursalPorId(int idSucursal) throws BDException {
         Sucursal sucursal = null;
         String query = "SELECT id_sucursal, nombre, direccion, telefono FROM sucursales WHERE id_sucursal = ?";
 
@@ -96,6 +97,6 @@ public class SucursalDAO {
             throw new BDException("Error al buscar la sucursal: " + e.getMessage(), e);
         }
 
-        return sucursal;
+        return Optional.ofNullable(sucursal);
     }
 }

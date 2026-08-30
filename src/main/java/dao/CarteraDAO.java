@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 
 public class CarteraDAO {
 
@@ -29,7 +30,7 @@ public class CarteraDAO {
         }
     }
 
-    public Cartera obtenerCarteraPorUsuario(int idUsuario) throws BDException {
+    public Optional<Cartera> obtenerCarteraPorUsuario(int idUsuario) throws BDException {
         Cartera cartera = null;
         String query = "SELECT id_cartera, id_usuario, saldo FROM carteras WHERE id_usuario = ?";
 
@@ -50,7 +51,7 @@ public class CarteraDAO {
             throw new BDException("Error al consultar la cartera: " + e.getMessage(), e);
         }
 
-        return cartera;
+        return Optional.ofNullable(cartera);
     }
 
     public boolean agregarFondos(int idUsuario, double monto) throws BDException {

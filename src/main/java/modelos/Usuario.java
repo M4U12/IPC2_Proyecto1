@@ -9,13 +9,13 @@ public class Usuario {
     private String telefono;
     private String direccion;
     private boolean estado;
-    private String rol;
+    private Enums.RolUsuario rol;
     private int idSucursalAsignada; //solo sirve para las consultas cruzadas
     
     public Usuario() {
     }
 
-    public Usuario(int idUsuario, String dpi, String password, String nombre, String nit, String telefono, String direccion, boolean estado, String rol) {
+    public Usuario(int idUsuario, String dpi, String password, String nombre, String nit, String telefono, String direccion, boolean estado, Enums.RolUsuario rol) {
         this.idUsuario = idUsuario;
         this.dpi = dpi;
         this.password = password;
@@ -59,7 +59,7 @@ public class Usuario {
         return estado;
     }
 
-    public String getRol() {
+    public Enums.RolUsuario getRol() {
         return rol;
     }
     
@@ -99,7 +99,7 @@ public class Usuario {
         this.estado = estado;
     }
 
-    public void setRol(String rol) {
+    public void setRol(Enums.RolUsuario rol) {
         this.rol = rol;
     }
 
