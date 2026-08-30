@@ -10,6 +10,7 @@ public class Usuario {
     private String direccion;
     private boolean estado;
     private String rol;
+    private int idSucursalAsignada; //solo sirve para las consultas cruzadas
     
     public Usuario() {
     }
@@ -61,6 +62,10 @@ public class Usuario {
     public String getRol() {
         return rol;
     }
+    
+    public int getIdSucursalAsignada(){
+        return idSucursalAsignada;
+    }
 
     public void setIdUsuario(int idUsuario) {
         this.idUsuario = idUsuario;
@@ -96,5 +101,9 @@ public class Usuario {
 
     public void setRol(String rol) {
         this.rol = rol;
+    }
+
+    public void setIdSucursalAsignada(int idSucursalAsignada) {
+        this.idSucursalAsignada = idSucursalAsignada;
     }
 }
