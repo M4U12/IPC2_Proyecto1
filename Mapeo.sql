@@ -11,7 +11,7 @@ CREATE TABLE Usuarios (
     telefono VARCHAR(8) NOT NULL UNIQUE,
     direccion VARCHAR(200),
     estado BOOLEAN DEFAULT TRUE,
-    rol ENUM('Administrador del sistema', 'Administrador de sucursal', 'Cliente') NOT NULL
+    rol ENUM('ADMINISTRADOR_SISTEMA', 'ADMINISTRADOR_SUCURSAL', 'CLIENTE') NOT NULL
 );
 
 
@@ -44,7 +44,7 @@ CREATE TABLE Choferes (
     nombre VARCHAR(100) NOT NULL,
     foto MEDIUMBLOB,
     num_licencia VARCHAR(50) NOT NULL UNIQUE,
-    tipo_licencia ENUM('Tipo A', 'Tipo B', 'Tipo C', 'Tipo D', 'Tipo E') NOT NULL,
+    tipo_licencia ENUM('TIPO_A', 'TIPO_B', 'TIPO_C', 'TIPO_D', 'TIPO_E') NOT NULL,
     fecha_vencimiento_licencia DATE NOT NULL,
     telefono VARCHAR(15) NOT NULL UNIQUE,
     salario_base_por_viaje DECIMAL(10,2) NOT NULL,
@@ -95,8 +95,8 @@ CREATE TABLE Rutas (
 
 CREATE TABLE Viajes (
     id_viaje INT AUTO_INCREMENT PRIMARY KEY,
-    tipo_viaje ENUM('Regular', 'Privado') NOT NULL,
-    estado_viaje ENUM('Programado', 'En curso', 'Finalizado', 'Cancelado') DEFAULT 'Programado',
+    tipo_viaje ENUM('REGULAR', 'PRIVADO') NOT NULL,
+    estado_viaje ENUM('PROGRAMADO', 'EN_CURSO', 'FINALIZADO', 'CANCELADO') DEFAULT 'PROGRAMADO',
     
     id_bus INT NOT NULL,
     id_chofer INT NOT NULL,

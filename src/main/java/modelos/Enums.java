@@ -10,7 +10,7 @@ public class Enums {
     }
 
     public enum TipoViaje {
-        ESTANDAR,
+        REGULAR,
         PRIVADO
     }
 
