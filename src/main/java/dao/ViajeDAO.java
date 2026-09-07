@@ -226,4 +226,44 @@ public class ViajeDAO {
 
         return viaje;
     }
+    
+    
+    public boolean eliminarViaje(int idViaje) throws BDException {
+        try (Connection connection = conexionDB.getConection()) {
+            
+            // verificar estado del viaje y existencia de pagos
+            String queryCheck = "SELECT v.estado_viaje, COUNT(b.id_boleto) AS boletos_vendidos "
+                    + "FROM viajes v LEFT JOIN boletos b ON v.id_viaje = b.id_viaje "
+                    + "WHERE v.id_viaje = ? GROUP BY v.estado_viaje";
+                    
+            try (PreparedStatement psCheck = connection.prepareStatement(queryCheck)) {
+                psCheck.setInt(1, idViaje);
+                try (ResultSet rs = psCheck.executeQuery()) {
+                    if (rs.next()) {
+                        String estado = rs.getString("estado_viaje");
+                        int boletosVendidos = rs.getInt("boletos_vendidos");
+                        
+                        if (!estado.equals(Enums.EstadoViaje.PROGRAMADO.name())) {
+                            throw new BDException("No se puede eliminar el viaje: ya fue iniciado, finalizado o cancelado.");
+                        }
+                        if (boletosVendidos > 0) {
+                            throw new BDException("No se puede eliminar el viaje: ya tiene boletos pagados por clientes.");
+                        }
+                    } else {
+                        throw new BDException("El viaje seleccionado no existe.");
+                    }
+                }
+            }
+
+            // se elimina
+            String queryDelete = "DELETE FROM viajes WHERE id_viaje = ?";
+            try (PreparedStatement psDelete = connection.prepareStatement(queryDelete)) {
+                psDelete.setInt(1, idViaje);
+                return psDelete.executeUpdate() > 0;
+            }
+
+        } catch (SQLException e) {
+            throw new BDException("Error en el proceso de eliminación del viaje: " + e.getMessage(), e);
+        }
+    }
 }

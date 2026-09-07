@@ -7,7 +7,7 @@ CREATE TABLE Usuarios (
     dpi VARCHAR(13) NOT NULL UNIQUE,
     password VARCHAR(100) NOT NULL,
     nombre VARCHAR(100) NOT NULL,
-    nit VARCHAR(13),
+    nit VARCHAR(13) NOT NULL UNIQUE,
     telefono VARCHAR(8) NOT NULL UNIQUE,
     direccion VARCHAR(200),
     estado BOOLEAN DEFAULT TRUE,
