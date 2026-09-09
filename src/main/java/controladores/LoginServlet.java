@@ -50,12 +50,12 @@ public class LoginServlet extends HttpServlet {
                     sesion.setAttribute("usuarioLogueado", usuario);
 
                     Enums.RolUsuario rol = usuario.getRol();
-                    if (rol == Enums.RolUsuario.ADMINISTRADOR_GLOBAL) {
-                        response.sendRedirect("PaginasUsuarios/admin_sistema.jsp");
+                    if (rol == Enums.RolUsuario.ADMINISTRADOR_SISTEMA) {
+                        response.sendRedirect("index.jsp");
                     } else if (rol == Enums.RolUsuario.ADMINISTRADOR_SUCURSAL) {
-                        response.sendRedirect("PaginasUsuarios/admin_sucursal.jsp");
+                        response.sendRedirect("index.jsp");
                     } else {
-                        response.sendRedirect("PaginasUsuarios/cliente.jsp");
+                        response.sendRedirect("index.jsp");
                     }
                 } else {
                     request.setAttribute("error", "Contraseña incorrecta. Intente de nuevo.");

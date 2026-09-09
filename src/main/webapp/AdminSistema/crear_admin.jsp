@@ -13,15 +13,23 @@
                     <div class="card shadow">
                         <div class="card-body p-5">
                             <h3 class="text-center mb-4">Crear Cuenta</h3>
-                            <!-- muestra errores enviados desde el servlet -->
+                            
+                            <% if (session.getAttribute("mensajeExito") != null) {%>
+                            <div class="alert alert-success" role="alert">
+                                <%= session.getAttribute("mensajeExito")%>
+                            </div>
+                            <% session.removeAttribute("mensajeExito"); %>
+                            <% }%>
+
+
                             <% if (request.getAttribute("error") != null) {%>
                             <div class="alert alert-danger" role="alert">
                                 <%= request.getAttribute("error")%>
                             </div>
                             <% }%>
 
-                            <form action="${pageContext.request.contextPath}/UsuarioServlet" method="POST">
-                                <input type="hidden" name="accion" value="crearCliente">
+                            <form action="${pageContext.request.contextPath}/AdminPersonalServlet" method="POST">
+                                <input type="hidden" name="accion" value="crearAdminSucursal">
 
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
@@ -56,7 +64,7 @@
 
                                 <button type="submit" class="btn btn-success w-100">Registrarme</button>
                                 <div class="mt-3 text-center">
-                                    <a href="<%= request.getContextPath() %>/LoginServlet" class="text-decoration-none">Volver</a>
+                                    <a href="${pageContext.request.contextPath}/index.jsp" class="text-decoration-none">Volver</a>
                                 </div>
                             </form>
                         </div>

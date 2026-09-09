@@ -17,11 +17,11 @@ public class UsuarioServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.sendRedirect("registro.jsp");
+        response.sendRedirect("LoginyRegistro/registro.jsp");
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String accion = request.getParameter("accion");
         UsuarioDAO usuarioDAO = new UsuarioDAO();
 
@@ -34,17 +34,17 @@ public class UsuarioServlet extends HttpServlet {
             // validaciones estrictas con regex solo numeros, sin signos, longitud exacta)
             if (dpi == null || !dpi.matches("\\d{13}")) {
                 request.setAttribute("error", "El DPI debe contener exactamente 13 números (sin guiones ni signos).");
-                request.getRequestDispatcher("registro.jsp").forward(request, response);
+                request.getRequestDispatcher("/LoginyRegistro/registro.jsp").forward(request, response);
                 return;
             }
             if (nit == null || !nit.matches("\\d{13}")) {
                 request.setAttribute("error", "El NIT debe contener exactamente 13 números.");
-                request.getRequestDispatcher("registro.jsp").forward(request, response);
+                request.getRequestDispatcher("/LoginyRegistro/registro.jsp").forward(request, response);
                 return;
             }
             if (telefono == null || !telefono.matches("\\d{8}")) {
                 request.setAttribute("error", "El teléfono debe contener exactamente 8 números.");
-                request.getRequestDispatcher("registro.jsp").forward(request, response);
+                request.getRequestDispatcher("/LoginyRegistro/registro.jsp").forward(request, response);
                 return;
             }
 
@@ -53,7 +53,7 @@ public class UsuarioServlet extends HttpServlet {
             // validacion estricta para el nombre
             if (nombre == null || !nombre.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$")) {
                 request.setAttribute("error", "El nombre contiene caracteres inválidos. Solo se permiten letras y espacios.");
-                request.getRequestDispatcher("registro.jsp").forward(request, response);
+                request.getRequestDispatcher("/LoginyRegistro/registro.jsp").forward(request, response);
                 return;
             }
 
@@ -61,17 +61,17 @@ public class UsuarioServlet extends HttpServlet {
 
                 if (usuarioDAO.existeDpi(dpi)) {
                     request.setAttribute("error", "El DPI ingresado ya está registrado en otra cuenta.");
-                    request.getRequestDispatcher("registro.jsp").forward(request, response);
+                    request.getRequestDispatcher("/LoginyRegistro/registro.jsp").forward(request, response);
                     return;
                 }
                 if (usuarioDAO.existeNit(nit)) {
                     request.setAttribute("error", "El NIT ingresado ya se encuentra registrado.");
-                    request.getRequestDispatcher("registro.jsp").forward(request, response);
+                    request.getRequestDispatcher("/LoginyRegistro/registro.jsp").forward(request, response);
                     return;
                 }
                 if (usuarioDAO.existeTelefono(telefono)) {
                     request.setAttribute("error", "El número de teléfono ya está asociado a otra cuenta.");
-                    request.getRequestDispatcher("registro.jsp").forward(request, response);
+                    request.getRequestDispatcher("/LoginyRegistro/registro.jsp").forward(request, response);
                     return;
                 }
 
@@ -88,12 +88,12 @@ public class UsuarioServlet extends HttpServlet {
                 usuarioDAO.crearUsuario(nuevoCliente);
 
                 request.setAttribute("mensaje", "Cuenta creada exitosamente. Ya puedes iniciar sesión.");
-                request.getRequestDispatcher("index.jsp").forward(request, response);
+                response.sendRedirect(request.getContextPath() + "/LoginyRegistro/login.jsp");
 
             } catch (BDException e) {
                 request.setAttribute("error", "Error al registrar: Ya existe un usuario con ese DPI/NIT/Numero de teléfono");
-                request.getRequestDispatcher("registro.jsp").forward(request, response);
+                response.sendRedirect(request.getContextPath() + "/LoginyRegistro/login.jsp");
             }
-        }
+        } 
     }
 }

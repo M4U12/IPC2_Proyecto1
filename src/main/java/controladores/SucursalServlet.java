@@ -4,13 +4,20 @@
  */
 package controladores;
 
+import dao.AdminSucursalDAO;
+import dao.SucursalDAO;
+import excepciones.BDException;
+import modelos.Sucursal;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
+import modelos.Usuario;
+import jakarta.servlet.http.HttpSession;
+import modelos.Enums;
 
 /**
  *
@@ -19,69 +26,77 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(name = "SucursalServlet", urlPatterns = {"/SucursalServlet"})
 public class SucursalServlet extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet SucursalServlet</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet SucursalServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession sesion = request.getSession(false);
+        Usuario usuarioActivo = (sesion != null) ? (Usuario) sesion.getAttribute("usuarioLogueado") : null;
+
+        if (usuarioActivo == null || usuarioActivo.getRol() != Enums.RolUsuario.ADMINISTRADOR_SISTEMA) {
+            response.sendRedirect(request.getContextPath() + "/LoginyRegistro/login.jsp");
+            return; 
+        }
+
+        SucursalDAO sucursalDAO = new SucursalDAO();
+        AdminSucursalDAO adminDAO = new AdminSucursalDAO();
+
+        try {
+            List<Sucursal> listaSucursales = sucursalDAO.listarSucursales();
+            List<Usuario> adminsDisponibles = adminDAO.listarAdminsDisponibles();
+            request.setAttribute("listaSucursales", listaSucursales);
+            request.setAttribute("adminsDisponibles", adminsDisponibles);
+
+        } catch (BDException e) {
+            request.setAttribute("error", "Error al cargar datos: " + e.getMessage());
+        }
+        request.getRequestDispatcher("/AdminSistema/gestion_sucursales.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        String accion = request.getParameter("accion");
+
+        if ("crear".equals(accion)) {
+            String nombre = request.getParameter("nombre");
+            String telefono = request.getParameter("telefono");
+            String direccion = request.getParameter("direccion");
+            int idAdmin = Integer.parseInt(request.getParameter("id_admin"));
+            
+            if (telefono == null || !telefono.matches("\\d{8}")) {
+                request.setAttribute("error", "El teléfono debe contener exactamente 8 números.");
+                request.getRequestDispatcher("/AdminSistema/gestion_sucursales.jsp").forward(request, response);
+                return;
+            }
+
+            SucursalDAO sucursalDAO = new SucursalDAO();
+            AdminSucursalDAO adminDAO = new AdminSucursalDAO();
+
+            try {
+                // numeros duplicados
+                if (sucursalDAO.existeTelefono(telefono)) {
+                    request.getSession().setAttribute("error", "No se pudo crear la sucursal. El número de teléfono ya se encuentra registrado.");
+                    response.sendRedirect(request.getContextPath() + "/SucursalServlet");
+                    return;
+                }
+
+                Sucursal nuevaSucursal = new Sucursal(0, nombre, direccion, telefono);
+                int idGenerado = sucursalDAO.agregarSucursal(nuevaSucursal);
+
+                if (idGenerado > 0) {
+                    nuevaSucursal.setIdSucursal(idGenerado);
+                    Usuario adminAsignado = new Usuario();
+                    adminAsignado.setIdUsuario(idAdmin);
+
+                    adminDAO.agregarAdminASucursal(adminAsignado, nuevaSucursal);
+                    request.getSession().setAttribute("mensajeExito", "Sucursal creada y administrador asignado con éxito.");
+                } else {
+                    request.getSession().setAttribute("error", "Error: No se pudo enlazar al administrador porque falló la generación de ID.");
+                }
+            } catch (BDException e) {
+                request.getSession().setAttribute("error", "Error: Hubo un fallo en la base de datos (" + e.getMessage() + ").");
+            }
+            response.sendRedirect(request.getContextPath() + "/SucursalServlet");
         }
     }
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
 
 }

@@ -1,0 +1,35 @@
+body {
+    background-color: #f4f6f9;
+}
+/* estilos redondeados para la barra lateral */
+.sidebar {
+    min-height: 100vh;
+    /* fade oscuro de arriba hacia abajo */
+    background: linear-gradient(180deg, #212529 0%, #0a0b0c 100%);
+    border-top-right-radius: 25px;
+    border-bottom-right-radius: 25px;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+}
+.sidebar h4 {
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+.sidebar a {
+    color: #b9bbbe;
+    text-decoration: none;
+    padding: 12px 20px;
+    display: block;
+    border-radius: 30px; 
+    margin: 5px 15px;
+    transition: all 0.3s ease;
+}
+.sidebar a:hover {
+    background-color: #36393f;
+    color: #ffffff;
+    transform: translateX(5px); 
+}
+.section-title {
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    margin-left: 20px;
+}

@@ -19,20 +19,26 @@ public class SucursalDAO {
         this.conexionDB = new DBConection();
     }
 
-    public boolean agregarSucursal(Sucursal sucursal) throws BDException {
+    public int agregarSucursal(Sucursal sucursal) throws BDException {
         String query = "INSERT INTO sucursales (nombre, direccion, telefono) VALUES (?, ?, ?)";
 
-        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, sucursal.getNombre());
             ps.setString(2, sucursal.getDireccion());
             ps.setString(3, sucursal.getTelefono());
+            ps.executeUpdate();
 
-            return ps.executeUpdate() > 0;
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1); // para que devuelva el id_sucursal
+                }
+            }
 
         } catch (SQLException e) {
             throw new BDException("Error al registrar la sucursal: " + e.getMessage(), e);
         }
+        return -1;
     }
 
     public List<Sucursal> listarSucursales() throws BDException {
@@ -98,5 +104,17 @@ public class SucursalDAO {
         }
 
         return Optional.ofNullable(sucursal);
+    }
+
+    public boolean existeTelefono(String telefono) throws BDException {
+        String query = "SELECT 1 FROM sucursales WHERE telefono = ?";
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setString(1, telefono);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next(); 
+            }
+        } catch (SQLException e) {
+            throw new BDException("Error al verificar el teléfono de la sucursal: " + e.getMessage(), e);
+        }
     }
 }

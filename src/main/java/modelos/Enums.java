@@ -15,7 +15,7 @@ public class Enums {
     }
 
     public enum RolUsuario {
-        ADMINISTRADOR_GLOBAL,
+        ADMINISTRADOR_SISTEMA,
         ADMINISTRADOR_SUCURSAL,
         CLIENTE,
     }

@@ -108,4 +108,26 @@ public class AdminSucursalDAO {
 
         return listaAdmins;
     }
+
+    public List<Usuario> listarAdminsDisponibles() throws BDException {
+        List<Usuario> disponibles = new ArrayList<>();
+        String query = "SELECT id_usuario, dpi, nombre, telefono FROM usuarios "
+                + "WHERE rol = 'ADMINISTRADOR_SUCURSAL' AND estado = TRUE "
+                + "AND id_usuario NOT IN (SELECT id_usuario FROM admin_sucursal)";
+
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Usuario admin = new Usuario();
+                admin.setIdUsuario(rs.getInt("id_usuario"));
+                admin.setDpi(rs.getString("dpi"));
+                admin.setNombre(rs.getString("nombre"));
+                admin.setTelefono(rs.getString("telefono"));
+                disponibles.add(admin);
+            }
+        } catch (SQLException e) {
+            throw new BDException("Error al buscar administradores disponibles: " + e.getMessage(), e);
+        }
+        return disponibles;
+    }
 }
