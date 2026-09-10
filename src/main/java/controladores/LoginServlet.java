@@ -14,13 +14,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet(name = "LoginServlet", urlPatterns = {"/LoginServlet"})
+@WebServlet(name = "LoginServlet", urlPatterns = {"/Login"})
 public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.sendRedirect("LoginyRegistro/login.jsp");
+        request.getRequestDispatcher("/LoginyRegistro/login.jsp").forward(request, response);
     }
 
     @Override

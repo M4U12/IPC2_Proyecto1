@@ -10,6 +10,7 @@ public class Usuario {
     private String direccion;
     private boolean estado;
     private Enums.RolUsuario rol;
+    private String nombreSucursalAsignada;
     private int idSucursalAsignada; //solo sirve para las consultas cruzadas
     
     public Usuario() {
@@ -105,5 +106,13 @@ public class Usuario {
 
     public void setIdSucursalAsignada(int idSucursalAsignada) {
         this.idSucursalAsignada = idSucursalAsignada;
+    }
+    
+    public String getNombreSucursalAsignada() {
+        return nombreSucursalAsignada;
+    }
+
+    public void setNombreSucursalAsignada(String nombreSucursalAsignada) {
+        this.nombreSucursalAsignada = nombreSucursalAsignada;
     }
 }

@@ -28,7 +28,7 @@
                             </div>
                             <% }%>
 
-                            <form action="${pageContext.request.contextPath}/AdminPersonalServlet" method="POST">
+                            <form action="${pageContext.request.contextPath}/Registro_Administrador_Sucursal" method="POST">
                                 <input type="hidden" name="accion" value="crearAdminSucursal">
 
                                 <div class="row">

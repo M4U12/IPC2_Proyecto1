@@ -20,7 +20,7 @@ import jakarta.servlet.http.HttpSession;
  *
  * @author ACER
  */
-@WebServlet(name = "AdminPersonalServlet", urlPatterns = {"/AdminPersonalServlet"})
+@WebServlet(name = "AdminPersonalServlet", urlPatterns = {"/Registro_Administrador_Sucursal"})
 public class AdminPersonalServlet extends HttpServlet {
 
 @Override
@@ -100,7 +100,7 @@ public class AdminPersonalServlet extends HttpServlet {
                 usuarioDAO.crearUsuario(nuevoAdmin);
 
                 request.getSession().setAttribute("mensajeExito", "Administrador de sucursal creado exitosamente.");
-                response.sendRedirect(request.getContextPath() + "/AdminPersonalServlet");
+                response.sendRedirect(request.getContextPath() + "/Registro_Administrador_Sucursal");
 
             } catch (BDException e) {
                 request.setAttribute("error", "Hubo un error de conexión con la base de datos.");

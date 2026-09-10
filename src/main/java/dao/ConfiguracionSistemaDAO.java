@@ -28,7 +28,6 @@ public class ConfiguracionSistemaDAO {
                 }
             }
 
-            
             String queryFinal = registroExiste
                     ? "UPDATE configuracion_sistema SET depreciacion_por_km = ?"
                     : "INSERT INTO configuracion_sistema (depreciacion_por_km) VALUES (?)";
@@ -41,5 +40,20 @@ public class ConfiguracionSistemaDAO {
         } catch (SQLException e) {
             throw new BDException("Error al procesar la configuración: " + e.getMessage(), e);
         }
+    }
+
+    public double obtenerDepreciacionActual() throws BDException {
+        String query = "SELECT depreciacion_por_km FROM configuracion_sistema LIMIT 1";
+
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getDouble("depreciacion_por_km");
+            }
+
+        } catch (SQLException e) {
+            throw new BDException("Error al cargar la configuración: " + e.getMessage(), e);
+        }
+        return 0.0; // valor por defecto si la tabla esta vacía
     }
 }

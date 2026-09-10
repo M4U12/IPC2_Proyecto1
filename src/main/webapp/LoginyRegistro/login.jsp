@@ -21,13 +21,13 @@
                             </div>
                             <% }%>
 
-                            <% if (request.getAttribute("mensaje") != null) {%>
+                            <% if (session.getAttribute("mensaje") != null) {%>
                             <div class="alert alert-success" role="alert">
-                                <%= request.getAttribute("mensaje")%>
+                                <%= session.getAttribute("mensaje")%>
                             </div>
                             <% }%>
 
-                            <form action="${pageContext.request.contextPath}/LoginServlet" method="POST">
+                            <form action="${pageContext.request.contextPath}/Login" method="POST">
                                 <div class="mb-3">
                                     <label class="form-label">DPI</label>
                                     <input type="text" class="form-control" name="dpi" pattern="\d{13}" title="Debe contener exactamente 13 números enteros" maxlength="13" onkeypress="soloNumeros(event)" required>
@@ -40,7 +40,7 @@
 
                                 <button type="submit" class="btn btn-primary w-100">Ingresar</button>
                                 <div class="mt-3 text-center">
-                                    <p>¿No tienes cuenta? <a href="<%= request.getContextPath() %>/UsuarioServlet" class="text-decoration-none">Regístrate aquí</a></p>
+                                    <p>¿No tienes cuenta? <a href="${pageContext.request.contextPath}/Registro_Usuarios" class="text-decoration-none">Regístrate aquí</a></p>
                                 </div>
                             </form>
                         </div>

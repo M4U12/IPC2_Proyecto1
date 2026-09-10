@@ -12,12 +12,12 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@WebServlet(name = "UsuarioServlet", urlPatterns = {"/UsuarioServlet"})
-public class UsuarioServlet extends HttpServlet {
+@WebServlet(name = "RegistroUsuariosServlet", urlPatterns = {"/Registro_Usuarios"})
+public class RegistroUsuariosServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.sendRedirect("LoginyRegistro/registro.jsp");
+        request.getRequestDispatcher("/LoginyRegistro/registro.jsp").forward(request, response);
     }
 
     @Override
@@ -88,11 +88,11 @@ public class UsuarioServlet extends HttpServlet {
                 usuarioDAO.crearUsuario(nuevoCliente);
 
                 request.setAttribute("mensaje", "Cuenta creada exitosamente. Ya puedes iniciar sesión.");
-                response.sendRedirect(request.getContextPath() + "/LoginyRegistro/login.jsp");
+                response.sendRedirect(request.getContextPath() + "/Login");
 
             } catch (BDException e) {
                 request.setAttribute("error", "Error al registrar: Ya existe un usuario con ese DPI/NIT/Numero de teléfono");
-                response.sendRedirect(request.getContextPath() + "/LoginyRegistro/login.jsp");
+                response.sendRedirect(request.getContextPath() + "/Login");
             }
         } 
     }

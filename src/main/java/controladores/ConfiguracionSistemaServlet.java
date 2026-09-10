@@ -4,84 +4,68 @@
  */
 package controladores;
 
+import dao.ConfiguracionSistemaDAO;
+import excepciones.BDException;
+import modelos.Usuario;
+import modelos.Enums;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  *
  * @author ACER
  */
-@WebServlet(name = "ConfiguracionSistemaServlet", urlPatterns = {"/ConfiguracionSistemaServlet"})
+@WebServlet(name = "ConfiguracionSistemaServlet", urlPatterns = {"/Parametros"})
 public class ConfiguracionSistemaServlet extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet ConfiguracionSistemaServlet</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet ConfiguracionSistemaServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession sesion = request.getSession(false);
+        Usuario usuarioActivo = (sesion != null) ? (Usuario) sesion.getAttribute("usuarioLogueado") : null;
+
+        if (usuarioActivo == null || usuarioActivo.getRol() != Enums.RolUsuario.ADMINISTRADOR_SISTEMA) {
+            response.sendRedirect(request.getContextPath() + "/Login");
+            return;
         }
+
+        ConfiguracionSistemaDAO configDAO = new ConfiguracionSistemaDAO();
+        try {
+            double depreciacionActual = configDAO.obtenerDepreciacionActual();
+            request.setAttribute("depreciacionActual", depreciacionActual);
+        } catch (BDException e) {
+            request.setAttribute("error", "Error al cargar datos: " + e.getMessage());
+        }
+
+        request.getRequestDispatcher("/AdminSistema/parametros.jsp").forward(request, response);
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            double nuevaDepreciacion = Double.parseDouble(request.getParameter("depreciacion"));
+
+            if (nuevaDepreciacion < 0) {
+                request.getSession().setAttribute("error", "La depreciación no puede ser un valor negativo.");
+                response.sendRedirect(request.getContextPath() + "/Parametros");
+                return;
+            }
+
+            ConfiguracionSistemaDAO configDAO = new ConfiguracionSistemaDAO();
+            configDAO.guardarConfiguracion(nuevaDepreciacion);
+
+            request.getSession().setAttribute("mensajeExito", "Valor de depreciación actualizado correctamente.");
+
+        } catch (NumberFormatException e) {
+            request.getSession().setAttribute("error", "Formato de número inválido.");
+        } catch (BDException e) {
+            request.getSession().setAttribute("error", "Error al guardar: " + e.getMessage());
+        }
+
+        response.sendRedirect(request.getContextPath() + "/Parametros");
     }
-
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
 }

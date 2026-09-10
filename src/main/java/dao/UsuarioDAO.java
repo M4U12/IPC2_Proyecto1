@@ -146,13 +146,13 @@ public class UsuarioDAO {
         }
     }
 
-    public boolean cambiarEstadoUsuario(String dpi, boolean nuevoEstado) throws BDException {
-        String query = "UPDATE usuarios SET estado = ? WHERE dpi = ?";
+    public boolean cambiarEstadoUsuario(int idUsuario, boolean nuevoEstado) throws BDException {
+        String query = "UPDATE usuarios SET estado = ? WHERE id_usuario = ?";
 
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
 
             ps.setBoolean(1, nuevoEstado);
-            ps.setString(2, dpi);
+            ps.setInt(2, idUsuario);
 
             return ps.executeUpdate() > 0;
 

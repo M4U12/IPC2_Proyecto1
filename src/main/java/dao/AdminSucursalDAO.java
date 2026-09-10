@@ -79,9 +79,12 @@ public class AdminSucursalDAO {
     public List<Usuario> listarTodosAdmins(String filtro) throws BDException {
         List<Usuario> listaAdmins = new ArrayList<>();
 
-        String query = "SELECT u.id_usuario, u.dpi, u.nombre, u.telefono, u.estado, asignacion.id_sucursal "
-                + "FROM usuarios u "
-                + "INNER JOIN admin_sucursal asignacion ON u.id_usuario = asignacion.id_usuario";
+        String query = "SELECT u.id_usuario, u.dpi, u.nombre, u.telefono, u.estado, "
+             + "asignacion.id_sucursal, s.nombre AS nombre_sucursal "
+             + "FROM usuarios u "
+             + "LEFT JOIN admin_sucursal asignacion ON u.id_usuario = asignacion.id_usuario "
+             + "LEFT JOIN sucursales s ON asignacion.id_sucursal = s.id_sucursal "
+             + "WHERE u.rol = 'ADMINISTRADOR_SUCURSAL'";
 
         if (filtro.equals("Activos")) {
             query += " WHERE u.estado = TRUE";
@@ -99,6 +102,8 @@ public class AdminSucursalDAO {
                 admin.setTelefono(rs.getString("telefono"));
                 admin.setEstado(rs.getBoolean("estado"));
                 admin.setIdSucursalAsignada(rs.getInt("id_sucursal"));
+                String nombreSuc = rs.getString("nombre_sucursal");
+                admin.setNombreSucursalAsignada(nombreSuc != null ? nombreSuc : "Sin asignar");
 
                 listaAdmins.add(admin);
             }

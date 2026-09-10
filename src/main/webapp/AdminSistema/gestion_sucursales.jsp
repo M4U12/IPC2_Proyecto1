@@ -51,7 +51,7 @@
                                 </div>
                             <% } %>
 
-                            <form action="${pageContext.request.contextPath}/SucursalServlet" method="POST">
+                            <form action="${pageContext.request.contextPath}/Gestionar_Sucursales" method="POST">
                                 <input type="hidden" name="accion" value="crear">
                                 
                                 <div class="mb-3">

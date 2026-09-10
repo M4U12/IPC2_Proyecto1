@@ -20,7 +20,7 @@
                             </div>
                             <% }%>
 
-                            <form action="${pageContext.request.contextPath}/UsuarioServlet" method="POST">
+                            <form action="${pageContext.request.contextPath}/Registro_Usuarios" method="POST">
                                 <input type="hidden" name="accion" value="crearCliente">
 
                                 <div class="row">
@@ -56,7 +56,7 @@
 
                                 <button type="submit" class="btn btn-success w-100">Registrarme</button>
                                 <div class="mt-3 text-center">
-                                    <a href="<%= request.getContextPath() %>/LoginServlet" class="text-decoration-none">Volver</a>
+                                    <a href="${pageContext.request.contextPath}/Login" class="text-decoration-none">Volver</a>
                                 </div>
                             </form>
                         </div>

@@ -19,26 +19,63 @@ public class SucursalDAO {
         this.conexionDB = new DBConection();
     }
 
-    public int agregarSucursal(Sucursal sucursal) throws BDException {
-        String query = "INSERT INTO sucursales (nombre, direccion, telefono) VALUES (?, ?, ?)";
+    public boolean agregarSucursal(Sucursal sucursal, int idAdmin) throws BDException {
+        String querySucursal = "INSERT INTO sucursales (nombre, direccion, telefono) VALUES (?, ?, ?)";
+        String queryAdmin = "INSERT INTO admin_sucursal (id_usuario, id_sucursal) VALUES (?, ?)";
+        Connection connection = null;
 
-        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
+        try {
+            connection = conexionDB.getConection();
+            connection.setAutoCommit(false);
 
-            ps.setString(1, sucursal.getNombre());
-            ps.setString(2, sucursal.getDireccion());
-            ps.setString(3, sucursal.getTelefono());
-            ps.executeUpdate();
+            int idSucursalGenerado = -1;
+            try (PreparedStatement psSucursal = connection.prepareStatement(querySucursal, PreparedStatement.RETURN_GENERATED_KEYS)) {
+                psSucursal.setString(1, sucursal.getNombre());
+                psSucursal.setString(2, sucursal.getDireccion());
+                psSucursal.setString(3, sucursal.getTelefono());
+                psSucursal.executeUpdate();
 
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    return rs.getInt(1); // para que devuelva el id_sucursal
+                try (ResultSet rs = psSucursal.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        idSucursalGenerado = rs.getInt(1);
+                    }
                 }
             }
 
+            if (idSucursalGenerado <= 0) {
+                connection.rollback();
+                return false;
+            }
+
+ 
+            try (PreparedStatement psAdmin = connection.prepareStatement(queryAdmin)) {
+                psAdmin.setInt(1, idAdmin);
+                psAdmin.setInt(2, idSucursalGenerado);
+                psAdmin.executeUpdate();
+            }
+
+            connection.commit(); 
+            return true;
+
         } catch (SQLException e) {
-            throw new BDException("Error al registrar la sucursal: " + e.getMessage(), e);
+            if (connection != null) {
+                try {
+                    connection.rollback(); 
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            throw new BDException("Error en la transacción al registrar sucursal: " + e.getMessage(), e);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close(); 
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
-        return -1;
     }
 
     public List<Sucursal> listarSucursales() throws BDException {
@@ -111,7 +148,7 @@ public class SucursalDAO {
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setString(1, telefono);
             try (ResultSet rs = ps.executeQuery()) {
-                return rs.next(); 
+                return rs.next();
             }
         } catch (SQLException e) {
             throw new BDException("Error al verificar el teléfono de la sucursal: " + e.getMessage(), e);

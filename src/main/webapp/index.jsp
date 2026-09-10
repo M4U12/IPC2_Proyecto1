@@ -30,7 +30,7 @@
                                 Transformamos la manera en la que viajas. Somos la red de transporte líder, dedicada a ofrecerte seguridad, comodidad y puntualidad en cada kilómetro recorrido. 
                             </p>
                             <% if (usuario == null) { %>
-                            <a href="LoginyRegistro/registro.jsp" class="btn btn-primary btn-lg rounded-pill px-4 mt-2 shadow-sm">Únete a nosotros</a>
+                            <a href="Registro_Usuarios" class="btn btn-primary btn-lg rounded-pill px-4 mt-2 shadow-sm">Únete a nosotros</a>
                             <% } else { %>
                             <a href="PaginasUsuarios/viajes_regulares.jsp" class="btn btn-primary btn-lg rounded-pill px-4 mt-2 shadow-sm">Ver próximos viajes</a>
                             <% }%>

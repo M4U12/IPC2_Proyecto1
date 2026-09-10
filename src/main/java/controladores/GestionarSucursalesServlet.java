@@ -23,8 +23,8 @@ import modelos.Enums;
  *
  * @author ACER
  */
-@WebServlet(name = "SucursalServlet", urlPatterns = {"/SucursalServlet"})
-public class SucursalServlet extends HttpServlet {
+@WebServlet(name = "GestionarSucursalesServlet", urlPatterns = {"/Gestionar_Sucursales"})
+public class GestionarSucursalesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -33,7 +33,7 @@ public class SucursalServlet extends HttpServlet {
 
         if (usuarioActivo == null || usuarioActivo.getRol() != Enums.RolUsuario.ADMINISTRADOR_SISTEMA) {
             response.sendRedirect(request.getContextPath() + "/LoginyRegistro/login.jsp");
-            return; 
+            return;
         }
 
         SucursalDAO sucursalDAO = new SucursalDAO();
@@ -61,7 +61,7 @@ public class SucursalServlet extends HttpServlet {
             String telefono = request.getParameter("telefono");
             String direccion = request.getParameter("direccion");
             int idAdmin = Integer.parseInt(request.getParameter("id_admin"));
-            
+
             if (telefono == null || !telefono.matches("\\d{8}")) {
                 request.setAttribute("error", "El teléfono debe contener exactamente 8 números.");
                 request.getRequestDispatcher("/AdminSistema/gestion_sucursales.jsp").forward(request, response);
@@ -69,33 +69,27 @@ public class SucursalServlet extends HttpServlet {
             }
 
             SucursalDAO sucursalDAO = new SucursalDAO();
-            AdminSucursalDAO adminDAO = new AdminSucursalDAO();
 
             try {
                 // numeros duplicados
                 if (sucursalDAO.existeTelefono(telefono)) {
                     request.getSession().setAttribute("error", "No se pudo crear la sucursal. El número de teléfono ya se encuentra registrado.");
-                    response.sendRedirect(request.getContextPath() + "/SucursalServlet");
+                    response.sendRedirect(request.getContextPath() + "/Gestionar_Sucursales");
                     return;
                 }
 
                 Sucursal nuevaSucursal = new Sucursal(0, nombre, direccion, telefono);
-                int idGenerado = sucursalDAO.agregarSucursal(nuevaSucursal);
+                boolean exito = sucursalDAO.agregarSucursal(nuevaSucursal, idAdmin);
 
-                if (idGenerado > 0) {
-                    nuevaSucursal.setIdSucursal(idGenerado);
-                    Usuario adminAsignado = new Usuario();
-                    adminAsignado.setIdUsuario(idAdmin);
-
-                    adminDAO.agregarAdminASucursal(adminAsignado, nuevaSucursal);
+                if (exito) {
                     request.getSession().setAttribute("mensajeExito", "Sucursal creada y administrador asignado con éxito.");
                 } else {
-                    request.getSession().setAttribute("error", "Error: No se pudo enlazar al administrador porque falló la generación de ID.");
+                    request.getSession().setAttribute("error", "Error: No se pudo completar la creación de la sucursal.");
                 }
             } catch (BDException e) {
                 request.getSession().setAttribute("error", "Error: Hubo un fallo en la base de datos (" + e.getMessage() + ").");
             }
-            response.sendRedirect(request.getContextPath() + "/SucursalServlet");
+            response.sendRedirect(request.getContextPath() + "/Gestionar_Sucursales");
         }
     }
 
