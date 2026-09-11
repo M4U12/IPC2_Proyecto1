@@ -226,23 +226,22 @@ public class ViajeDAO {
 
         return viaje;
     }
-    
-    
+
     public boolean eliminarViaje(int idViaje) throws BDException {
         try (Connection connection = conexionDB.getConection()) {
-            
+
             // verificar estado del viaje y existencia de pagos
             String queryCheck = "SELECT v.estado_viaje, COUNT(b.id_boleto) AS boletos_vendidos "
                     + "FROM viajes v LEFT JOIN boletos b ON v.id_viaje = b.id_viaje "
                     + "WHERE v.id_viaje = ? GROUP BY v.estado_viaje";
-                    
+
             try (PreparedStatement psCheck = connection.prepareStatement(queryCheck)) {
                 psCheck.setInt(1, idViaje);
                 try (ResultSet rs = psCheck.executeQuery()) {
                     if (rs.next()) {
                         String estado = rs.getString("estado_viaje");
                         int boletosVendidos = rs.getInt("boletos_vendidos");
-                        
+
                         if (!estado.equals(Enums.EstadoViaje.PROGRAMADO.name())) {
                             throw new BDException("No se puede eliminar el viaje: ya fue iniciado, finalizado o cancelado.");
                         }
@@ -265,5 +264,21 @@ public class ViajeDAO {
         } catch (SQLException e) {
             throw new BDException("Error en el proceso de eliminación del viaje: " + e.getMessage(), e);
         }
+    }
+
+    public boolean tieneViajesActivosPorBus(int idBus) throws BDException {
+        String query = "SELECT COUNT(*) FROM viajes WHERE id_bus = ? AND estado_viaje IN ('PROGRAMADO', 'EN_CURSO')";
+        try (java.sql.Connection connection = conexionDB.getConection(); java.sql.PreparedStatement ps = connection.prepareStatement(query)) {
+
+            ps.setInt(1, idBus);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (java.sql.SQLException e) {
+            throw new BDException("Error al verificar viajes del bus: " + e.getMessage(), e);
+        }
+        return false;
     }
 }

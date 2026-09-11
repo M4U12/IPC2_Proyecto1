@@ -6,7 +6,7 @@
 <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Gestión de Administradores - Code 'n Buses</title>
+        <title>Gestión de Administradores</title>
         <jsp:include page="/Componentes/recursos.jsp" />
     </head>
     <body>
@@ -84,7 +84,7 @@
                                                     <input type="hidden" name="id_usuario" value="<%= admin.getIdUsuario()%>">
                                                     <input type="hidden" name="id_sucursal_actual" value="<%= admin.getIdSucursalAsignada()%>">
 
-                                                    <select name="id_nueva_sucursal" class="form-select form-select-sm" style="width: 150px;" required>
+                                                    <select name="id_nueva_sucursal" class="form-select form-select-sm" style="width: 150px;" required <%= !admin.isEstado() ? "disabled" : "" %>>
                                                         <option value="">Mover a...</option>
                                                         <% if (listaSucursales != null) {
                                                                 for (Sucursal s : listaSucursales) {

@@ -1,5 +1,6 @@
 package controladores;
 
+import dao.AdminSucursalDAO;
 import dao.UsuarioDAO;
 import excepciones.BDException;
 import modelos.Usuario;
@@ -45,18 +46,21 @@ public class LoginServlet extends HttpServlet {
                         return;
                     }
 
-                    // crea sesion en el servidor con jakarta
-                    HttpSession sesion = request.getSession();
-                    sesion.setAttribute("usuarioLogueado", usuario);
 
                     Enums.RolUsuario rol = usuario.getRol();
-                    if (rol == Enums.RolUsuario.ADMINISTRADOR_SISTEMA) {
-                        response.sendRedirect("index.jsp");
-                    } else if (rol == Enums.RolUsuario.ADMINISTRADOR_SUCURSAL) {
-                        response.sendRedirect("index.jsp");
-                    } else {
-                        response.sendRedirect("index.jsp");
+                    if (rol == Enums.RolUsuario.ADMINISTRADOR_SUCURSAL) {
+                        AdminSucursalDAO adminDAO = new AdminSucursalDAO();
+                        int idSucursal = adminDAO.obtenerSucursalDeAdmin(usuario.getIdUsuario());
+                        if (idSucursal == 0) {
+                            request.setAttribute("error", "Acceso denegado: No tienes ninguna sucursal asignada para operar.");
+                            request.getRequestDispatcher("LoginyRegistro/login.jsp").forward(request, response);
+                            return;
+                        }
+                        usuario.setIdSucursalAsignada(idSucursal);
                     }
+                    HttpSession sesion = request.getSession();
+                    sesion.setAttribute("usuarioLogueado", usuario);
+                    response.sendRedirect("index.jsp");
                 } else {
                     request.setAttribute("error", "Contraseña incorrecta. Intente de nuevo.");
                     request.getRequestDispatcher("LoginyRegistro/login.jsp").forward(request, response);

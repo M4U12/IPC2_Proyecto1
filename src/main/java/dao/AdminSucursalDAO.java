@@ -135,4 +135,19 @@ public class AdminSucursalDAO {
         }
         return disponibles;
     }
+    
+    public int obtenerSucursalDeAdmin(int idUsuario) throws BDException{
+        String query = "SELECT id_sucursal FROM admin_sucursal WHERE id_usuario = ?";
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)){
+            ps.setInt(1, idUsuario);
+            try(ResultSet rs = ps.executeQuery()){
+                if (rs.next()){
+                    return rs.getInt("id_sucursal");
+                }
+            }
+        }catch (SQLException e){
+            throw new BDException("Error al verificar la sucursal del administrador: " + e.getMessage(), e);
+        }
+        return 0;
+    }
 }

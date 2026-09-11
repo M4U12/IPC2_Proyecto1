@@ -3,7 +3,7 @@
 <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Registro</title>
+        <title>Nuevo Administrador de Sucursal</title>
         <jsp:include page="/Componentes/recursos.jsp" />
     </head>
     <body class="bg-light d-flex align-items-center py-5">
@@ -12,7 +12,7 @@
                 <div class="col-md-6">
                     <div class="card shadow">
                         <div class="card-body p-5">
-                            <h3 class="text-center mb-4">Crear Cuenta</h3>
+                            <h3 class="text-center mb-4">Nuevo Administrador de Sucursal</h3>
                             
                             <% if (session.getAttribute("mensajeExito") != null) {%>
                             <div class="alert alert-success" role="alert">

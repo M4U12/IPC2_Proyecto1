@@ -9,7 +9,7 @@
 <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Sucursales - Code 'n Buses</title>
+        <title>Sucursales</title>
         <jsp:include page="/Componentes/recursos.jsp" />
     </head>
     <body>
