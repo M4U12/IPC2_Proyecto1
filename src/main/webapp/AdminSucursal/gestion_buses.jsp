@@ -88,6 +88,7 @@
                                             <th>Detalles</th>
                                             <th>Asientos</th>
                                             <th>Estado</th>
+                                            <th>Kilometraje</th>
                                             <th>Acción</th>
                                         </tr>
                                     </thead>
@@ -112,6 +113,7 @@
                                                     <span class="badge <%= b.isEstado() ? "bg-success" : "bg-danger" %> mb-1 d-block"><%= b.isEstado() ? "Activo" : "De Baja" %></span>
                                                     <small class="fw-bold text-secondary"><%= b.getEstadoOperativo() %></small>
                                                 </td>
+                                                <td class="text muted"><%= b.getKilometrajeActual()%></td>
                                                 <td>
                                                     <div class="d-flex gap-2">
                                                         <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalEditarBus<%= b.getIdBus() %>">

@@ -27,4 +27,11 @@ public class Enums {
         TIPO_D,
         TIPO_E
     }
+    
+    public enum EstadoOperativo{
+        DISPONIBLE,
+        EN_RUTA,
+        EN_MANTENIMIENTO,
+        INACTIVO,
+    }
 }

@@ -63,7 +63,7 @@ CREATE TABLE Buses (
     modelo VARCHAR(50) NOT NULL,
     anio_fabricacion INT NOT NULL,
     capacidad INT NOT NULL,
-    estado_operativo ENUM('Disponible', 'En Ruta', 'En Mantenimiento', 'Inactivo') NOT NULL,
+    estado_operativo ENUM('DISPONIBLE', 'EN_RUTA', 'EN_MANTENIMIENTO', 'INACTIVO') NOT NULL,
     kilometraje_actual DECIMAL(10,2) NOT NULL,
     estado BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (id_sucursal) REFERENCES Sucursales(id_sucursal),

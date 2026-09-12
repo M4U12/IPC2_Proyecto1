@@ -145,33 +145,25 @@ public class ViajeDAO {
     }
 
     public boolean iniciarViaje(int idViaje, double kilometrajeSalida, LocalDateTime fechaHoraSalidaReal) throws BDException {
-        String query = "UPDATE viajes SET estado_viaje = 'En Curso', kilometraje_salida = ?, fecha_hora_salida_real = ? WHERE id_viaje = ?";
-
+        String query = "UPDATE viajes SET estado_viaje = 'EN_CURSO', kilometraje_salida = ?, fecha_hora_salida_real = ? WHERE id_viaje = ?";
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
-
             ps.setDouble(1, kilometrajeSalida);
             ps.setTimestamp(2, Timestamp.valueOf(fechaHoraSalidaReal));
             ps.setInt(3, idViaje);
-
             return ps.executeUpdate() > 0;
-
         } catch (SQLException e) {
             throw new BDException("Error al iniciar el viaje: " + e.getMessage(), e);
         }
     }
 
     public boolean finalizarViaje(int idViaje, double kilometrajeLlegada, double gastoCombustible, LocalDateTime fechaHoraLlegadaReal) throws BDException {
-        String query = "UPDATE viajes SET estado_viaje = 'Finalizado', kilometraje_llegada = ?, gasto_combustible = ?, fecha_hora_llegada_real = ? WHERE id_viaje = ?";
-
+        String query = "UPDATE viajes SET estado_viaje = 'FINALIZADO', kilometraje_llegada = ?, gasto_combustible = ?, fecha_hora_llegada_real = ? WHERE id_viaje = ?";
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
-
             ps.setDouble(1, kilometrajeLlegada);
             ps.setDouble(2, gastoCombustible);
             ps.setTimestamp(3, Timestamp.valueOf(fechaHoraLlegadaReal));
             ps.setInt(4, idViaje);
-
             return ps.executeUpdate() > 0;
-
         } catch (SQLException e) {
             throw new BDException("Error al finalizar el viaje: " + e.getMessage(), e);
         }
@@ -280,5 +272,55 @@ public class ViajeDAO {
             throw new BDException("Error al verificar viajes del bus: " + e.getMessage(), e);
         }
         return false;
+    }
+
+    public List<Viaje> listarViajesRegularesPorSucursal(int idSucursal) throws BDException {
+        List<Viaje> listaViajes = new ArrayList<>();
+        String query = "SELECT v.* FROM viajes v "
+                + "INNER JOIN rutas r ON v.id_ruta = r.id_ruta "
+                + "WHERE r.id_origen = ? AND v.tipo_viaje = 'REGULAR' "
+                + "ORDER BY v.fecha_hora_salida_estimada ASC";
+
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+
+            ps.setInt(1, idSucursal);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Viaje viaje = extraerViajeDeResultSet(rs);
+                    listaViajes.add(viaje);
+                }
+            }
+        } catch (SQLException e) {
+            throw new BDException("Error al listar los viajes de la sucursal: " + e.getMessage(), e);
+        }
+        return listaViajes;
+    }
+
+    public boolean actualizarViajeRegular(Viaje viaje) throws BDException {
+        String query = "UPDATE viajes SET id_ruta = ?, id_bus = ?, id_chofer = ?, fecha_hora_salida_estimada = ?, fecha_hora_llegada_estimada = ? "
+                + "WHERE id_viaje = ? AND estado_viaje = 'PROGRAMADO'";
+
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, viaje.getIdRuta());
+            ps.setInt(2, viaje.getIdBus());
+            ps.setInt(3, viaje.getIdChofer());
+            ps.setTimestamp(4, Timestamp.valueOf(viaje.getFechaHoraSalidaEstimada()));
+            ps.setTimestamp(5, Timestamp.valueOf(viaje.getFechaHoraLlegadaEstimada()));
+            ps.setInt(6, viaje.getIdViaje());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new BDException("Error al actualizar el viaje: " + e.getMessage(), e);
+        }
+    }
+
+    public boolean cancelarViaje(int idViaje) throws BDException {
+        String query = "UPDATE viajes SET estado_viaje = 'CANCELADO' WHERE id_viaje = ? AND estado_viaje = 'PROGRAMADO'";
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, idViaje);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new BDException("Error al cancelar el viaje: " + e.getMessage(), e);
+        }
     }
 }

@@ -47,7 +47,6 @@ public class AdminPersonalServlet extends HttpServlet {
             String telefono = request.getParameter("telefono");
             String nombre = request.getParameter("nombre");
 
-            // Validaciones estrictas
             if (dpi == null || !dpi.matches("\\d{13}")) {
                 request.setAttribute("error", "El DPI debe contener exactamente 13 números.");
                 request.getRequestDispatcher("/AdminSistema/crear_admin.jsp").forward(request, response);

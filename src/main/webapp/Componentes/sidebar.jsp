@@ -35,7 +35,8 @@
             <strong class="text-success section-title mt-4 d-block">ADMIN SUCURSAL</strong>
             <a href="${pageContext.request.contextPath}/Gestionar_Choferes">Gestión de Choferes</a>
             <a href="${pageContext.request.contextPath}/Gestionar_Buses">Gestión de Buses</a>
-            <a href="${pageContext.request.contextPath}/AdminSucursal/rutas_viajes.jsp">Rutas y Viajes</a>
+            <a href="${pageContext.request.contextPath}/Gestionar_Rutas">Rutas</a>
+            <a href="${pageContext.request.contextPath}/Gestionar_Viajes">Viajes</a>
             <a href="${pageContext.request.contextPath}/AdminSucursal/registros_diarios.jsp">Registros Diarios</a>
             <a href="${pageContext.request.contextPath}/AdminSucursal/alquileres_privados.jsp">Alquileres Privados</a>
             <a href="${pageContext.request.contextPath}/AdminSucursal/reportes_sucursal.jsp">Reportes</a>

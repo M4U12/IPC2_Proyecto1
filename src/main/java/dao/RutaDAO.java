@@ -19,13 +19,14 @@ public class RutaDAO {
     }
 
     public boolean agregarRuta(Ruta ruta) throws BDException {
-        String query = "INSERT INTO rutas (id_origen, id_destino, distancia_km) VALUES (?, ?, ?)";
+        String query = "INSERT INTO rutas (id_origen, id_destino, distancia_km, precio) VALUES (?, ?, ?, ?)";
 
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
 
             ps.setInt(1, ruta.getIdOrigen());
             ps.setInt(2, ruta.getIdDestino());
             ps.setDouble(3, ruta.getDistanciaKm());
+            ps.setDouble(4, ruta.getPrecio());
 
             return ps.executeUpdate() > 0;
 
@@ -101,5 +102,22 @@ public class RutaDAO {
         } catch (SQLException e) {
             throw new BDException("Error en el proceso de eliminación de la ruta: " + e.getMessage(), e);
         }
+    }
+
+    public boolean existeRuta(int idOrigen, int idDestino) throws BDException {
+        String query = "SELECT COUNT(*) FROM rutas WHERE id_origen = ? AND id_destino = ?";
+        try (java.sql.Connection connection = conexionDB.getConection(); java.sql.PreparedStatement ps = connection.prepareStatement(query)) {
+
+            ps.setInt(1, idOrigen);
+            ps.setInt(2, idDestino);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0; 
+                }
+            }
+        } catch (SQLException e) {
+            throw new BDException("Error al verificar duplicados: " + e.getMessage(), e);
+        }
+        return false;
     }
 }
