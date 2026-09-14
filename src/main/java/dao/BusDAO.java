@@ -10,6 +10,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import modelos.Bus;
+import modelos.Enums;
 
 public class BusDAO {
 
@@ -135,12 +136,12 @@ public class BusDAO {
         }
     }
 
-    public boolean actualizarEstadoOperativoYKilometraje(int idBus, String estadoOperativo, double nuevoKilometraje) throws BDException {
+    public boolean actualizarEstadoOperativoYKilometraje(int idBus, Enums.EstadoOperativo estado, double nuevoKilometraje) throws BDException {
         String query = "UPDATE buses SET estado_operativo = ?, kilometraje_actual = ? WHERE id_bus = ?";
 
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
 
-            ps.setString(1, estadoOperativo);
+            ps.setString(1, estado.name());
             ps.setDouble(2, nuevoKilometraje);
             ps.setInt(3, idBus);
 
@@ -148,6 +149,26 @@ public class BusDAO {
 
         } catch (SQLException e) {
             throw new BDException("Error al actualizar la operación del bus: " + e.getMessage(), e);
+        }
+    }
+
+    public boolean actualizarEstadoOperativo(int idBus, Enums.EstadoOperativo estado) throws BDException {
+        String query = "UPDATE buses SET estado_operativo = ? WHERE id_bus = ?";
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setString(1, estado.name());
+            ps.setInt(2, idBus);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new BDException("Error al cambiar estado del bus: " + e.getMessage(), e);
+        }
+    }
+
+    public void validarBusLibre(int idBus) throws BDException {
+        dao.ViajeDAO vDAO = new dao.ViajeDAO();
+        dao.ViajePrivadoDAO vpDAO = new dao.ViajePrivadoDAO();
+
+        if (vDAO.tieneViajesActivosPorBus(idBus) || vpDAO.tieneViajesPrivadosActivosPorBus(idBus)) {
+            throw new BDException("Operación denegada: El bus está asignado a un viaje programado o en curso.");
         }
     }
 }

@@ -6,7 +6,7 @@
 <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Gestión de Choferes - Code 'n Buses</title>
+        <title>Gestión de Choferes</title>
         <jsp:include page="/Componentes/recursos.jsp" />
     </head>
     <body>
@@ -87,6 +87,7 @@
                                     <table class="table table-hover align-middle border">
                                         <thead class="table-light">
                                             <tr>
+                                                <th>ID</th>
                                                 <th>Foto</th>
                                                 <th>Nombre</th>
                                                 <th>Licencia</th>
@@ -102,6 +103,7 @@
                                                 if (listaChoferes != null && !listaChoferes.isEmpty()) {
                                                     for (Chofer c : listaChoferes) { %>
                                             <tr>
+                                                <td><%=c.getIdChofer()%></td>
                                                 <td>
                                                     <% if (c.getFoto() == null || c.getFoto().isEmpty()) { %>
                                                     <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">

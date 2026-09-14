@@ -23,92 +23,58 @@ public class ViajeDAO {
     }
 
     public boolean registrarViaje(Viaje viaje) throws BDException {
-        String query = "INSERT INTO viajes (tipo_viaje, estado_viaje, id_bus, id_chofer, id_ruta, id_cliente, "
-                + "origen_privado, destino_privado, cantidad_pasajeros_privado, precio_total_privado, fecha_retorno_privado, "
+        String query = "INSERT INTO viajes (estado_viaje, id_bus, id_chofer, id_ruta, "
                 + "fecha_hora_salida_estimada, fecha_hora_llegada_estimada, fecha_hora_salida_real, fecha_hora_llegada_real, "
                 + "kilometraje_salida, kilometraje_llegada, gasto_combustible) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
 
-            ps.setString(1, viaje.getTipoViaje().name());
-            ps.setString(2, viaje.getEstadoViaje().name());
-            ps.setInt(3, viaje.getIdBus());
-            ps.setInt(4, viaje.getIdChofer());
+            ps.setString(1, viaje.getEstadoViaje().name());
+            ps.setInt(2, viaje.getIdBus());
+            ps.setInt(3, viaje.getIdChofer());
+            ps.setInt(4, viaje.getIdRuta());
 
-            if (viaje.getIdRuta() != null) {
-                ps.setInt(5, viaje.getIdRuta());
+            if (viaje.getFechaHoraSalidaEstimada() != null) {
+                ps.setTimestamp(5, Timestamp.valueOf(viaje.getFechaHoraSalidaEstimada()));
             } else {
-                ps.setNull(5, Types.INTEGER);
+                ps.setNull(5, Types.TIMESTAMP);
             }
 
-            if (viaje.getIdCliente() != null) {
-                ps.setInt(6, viaje.getIdCliente());
+            if (viaje.getFechaHoraLlegadaEstimada() != null) {
+                ps.setTimestamp(6, Timestamp.valueOf(viaje.getFechaHoraLlegadaEstimada()));
             } else {
-                ps.setNull(6, Types.INTEGER);
+                ps.setNull(6, Types.TIMESTAMP);
             }
 
-            ps.setString(7, viaje.getOrigenPrivado());
-            ps.setString(8, viaje.getDestinoPrivado());
-
-            if (viaje.getCantidadPasajerosPrivado() != null) {
-                ps.setInt(9, viaje.getCantidadPasajerosPrivado());
+            if (viaje.getFechaHoraSalidaReal() != null) {
+                ps.setTimestamp(7, Timestamp.valueOf(viaje.getFechaHoraSalidaReal()));
             } else {
-                ps.setNull(9, Types.INTEGER);
+                ps.setNull(7, Types.TIMESTAMP);
             }
 
-            if (viaje.getPrecioTotalPrivado() != null) {
-                ps.setDouble(10, viaje.getPrecioTotalPrivado());
+            if (viaje.getFechaHoraLlegadaReal() != null) {
+                ps.setTimestamp(8, Timestamp.valueOf(viaje.getFechaHoraLlegadaReal()));
+            } else {
+                ps.setNull(8, Types.TIMESTAMP);
+            }
+
+            if (viaje.getKilometrajeSalida() != null) {
+                ps.setDouble(9, viaje.getKilometrajeSalida());
+            } else {
+                ps.setNull(9, Types.DOUBLE);
+            }
+
+            if (viaje.getKilometrajeLlegada() != null) {
+                ps.setDouble(10, viaje.getKilometrajeLlegada());
             } else {
                 ps.setNull(10, Types.DOUBLE);
             }
 
-            if (viaje.getFechaRetornoPrivado() != null) {
-                ps.setTimestamp(11, Timestamp.valueOf(viaje.getFechaRetornoPrivado()));
-            } else {
-                ps.setNull(11, Types.TIMESTAMP);
-            }
-
-            if (viaje.getFechaHoraSalidaEstimada() != null) {
-                ps.setTimestamp(12, Timestamp.valueOf(viaje.getFechaHoraSalidaEstimada()));
-            } else {
-                ps.setNull(12, Types.TIMESTAMP);
-            }
-
-            if (viaje.getFechaHoraLlegadaEstimada() != null) {
-                ps.setTimestamp(13, Timestamp.valueOf(viaje.getFechaHoraLlegadaEstimada()));
-            } else {
-                ps.setNull(13, Types.TIMESTAMP);
-            }
-
-            if (viaje.getFechaHoraSalidaReal() != null) {
-                ps.setTimestamp(14, Timestamp.valueOf(viaje.getFechaHoraSalidaReal()));
-            } else {
-                ps.setNull(14, Types.TIMESTAMP);
-            }
-
-            if (viaje.getFechaHoraLlegadaReal() != null) {
-                ps.setTimestamp(15, Timestamp.valueOf(viaje.getFechaHoraLlegadaReal()));
-            } else {
-                ps.setNull(15, Types.TIMESTAMP);
-            }
-
-            if (viaje.getKilometrajeSalida() != null) {
-                ps.setDouble(16, viaje.getKilometrajeSalida());
-            } else {
-                ps.setNull(16, Types.DOUBLE);
-            }
-
-            if (viaje.getKilometrajeLlegada() != null) {
-                ps.setDouble(17, viaje.getKilometrajeLlegada());
-            } else {
-                ps.setNull(17, Types.DOUBLE);
-            }
-
             if (viaje.getGastoCombustible() != null) {
-                ps.setDouble(18, viaje.getGastoCombustible());
+                ps.setDouble(11, viaje.getGastoCombustible());
             } else {
-                ps.setNull(18, Types.DOUBLE);
+                ps.setNull(11, Types.DOUBLE);
             }
 
             return ps.executeUpdate() > 0;
@@ -118,28 +84,22 @@ public class ViajeDAO {
         }
     }
 
-    public List<Viaje> listarViajes(String estadoFiltro) throws BDException {
+    public List<Viaje> listarViajesRegularesPorSucursal(int idSucursal) throws BDException {
         List<Viaje> listaViajes = new ArrayList<>();
-        String query = "SELECT * FROM viajes";
-
-        if (estadoFiltro != null && !estadoFiltro.isEmpty()) {
-            query += " WHERE estado_viaje = ?";
-        }
+        String query = "SELECT v.* FROM viajes v "
+                + "INNER JOIN rutas r ON v.id_ruta = r.id_ruta "
+                + "WHERE r.id_origen = ? "
+                + "ORDER BY v.fecha_hora_salida_estimada ASC";
 
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
-
-            if (estadoFiltro != null && !estadoFiltro.isEmpty()) {
-                ps.setString(1, estadoFiltro);
-            }
-
+            ps.setInt(1, idSucursal);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Viaje viaje = extraerViajeDeResultSet(rs);
-                    listaViajes.add(viaje);
+                    listaViajes.add(extraerViajeDeResultSet(rs));
                 }
             }
         } catch (SQLException e) {
-            throw new BDException("Error al listar los viajes: " + e.getMessage(), e);
+            throw new BDException("Error al listar los viajes de la sucursal: " + e.getMessage(), e);
         }
         return listaViajes;
     }
@@ -172,28 +132,10 @@ public class ViajeDAO {
     private Viaje extraerViajeDeResultSet(ResultSet rs) throws SQLException {
         Viaje viaje = new Viaje();
         viaje.setIdViaje(rs.getInt("id_viaje"));
-        viaje.setTipoViaje(Enums.TipoViaje.valueOf(rs.getString("tipo_viaje")));
         viaje.setEstadoViaje(Enums.EstadoViaje.valueOf(rs.getString("estado_viaje")));
         viaje.setIdBus(rs.getInt("id_bus"));
         viaje.setIdChofer(rs.getInt("id_chofer"));
-
-        int idRuta = rs.getInt("id_ruta");
-        viaje.setIdRuta(rs.wasNull() ? null : idRuta);
-
-        int idCliente = rs.getInt("id_cliente");
-        viaje.setIdCliente(rs.wasNull() ? null : idCliente);
-
-        viaje.setOrigenPrivado(rs.getString("origen_privado"));
-        viaje.setDestinoPrivado(rs.getString("destino_privado"));
-
-        int cantidad = rs.getInt("cantidad_pasajeros_privado");
-        viaje.setCantidadPasajerosPrivado(rs.wasNull() ? null : cantidad);
-
-        double precio = rs.getDouble("precio_total_privado");
-        viaje.setPrecioTotalPrivado(rs.wasNull() ? null : precio);
-
-        Timestamp retorno = rs.getTimestamp("fecha_retorno_privado");
-        viaje.setFechaRetornoPrivado(retorno != null ? retorno.toLocalDateTime() : null);
+        viaje.setIdRuta(rs.getInt("id_ruta"));
 
         Timestamp salidaEst = rs.getTimestamp("fecha_hora_salida_estimada");
         viaje.setFechaHoraSalidaEstimada(salidaEst != null ? salidaEst.toLocalDateTime() : null);
@@ -274,27 +216,19 @@ public class ViajeDAO {
         return false;
     }
 
-    public List<Viaje> listarViajesRegularesPorSucursal(int idSucursal) throws BDException {
-        List<Viaje> listaViajes = new ArrayList<>();
-        String query = "SELECT v.* FROM viajes v "
-                + "INNER JOIN rutas r ON v.id_ruta = r.id_ruta "
-                + "WHERE r.id_origen = ? AND v.tipo_viaje = 'REGULAR' "
-                + "ORDER BY v.fecha_hora_salida_estimada ASC";
-
+    public boolean tieneViajesActivosPorChofer(int idChofer) throws BDException {
+        String query = "SELECT COUNT(*) FROM viajes WHERE id_chofer = ? AND estado IN ('PROGRAMADO', 'EN_CURSO')";
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
-
-            ps.setInt(1, idSucursal);
-
+            ps.setInt(1, idChofer);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Viaje viaje = extraerViajeDeResultSet(rs);
-                    listaViajes.add(viaje);
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
                 }
             }
         } catch (SQLException e) {
-            throw new BDException("Error al listar los viajes de la sucursal: " + e.getMessage(), e);
+            throw new BDException("Error al verificar viajes privados del chofer: " + e.getMessage(), e);
         }
-        return listaViajes;
+        return false;
     }
 
     public boolean actualizarViajeRegular(Viaje viaje) throws BDException {

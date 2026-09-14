@@ -1,87 +1,94 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controladores;
 
+import dao.CarteraDAO;
+import dao.TransaccionDAO;
+import excepciones.BDException;
+import modelos.Cartera;
+import modelos.Transaccion;
+import modelos.Usuario;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
-/**
- *
- * @author ACER
- */
-@WebServlet(name = "CarteraServlet", urlPatterns = {"/CarteraServlet"})
+@WebServlet(name = "CarteraServlet", urlPatterns = {"/Mi_Cartera"})
 public class CarteraServlet extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet CarteraServlet</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet CarteraServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession sesion = request.getSession(false);
+        Usuario usuarioActivo = (sesion != null) ? (Usuario) sesion.getAttribute("usuarioLogueado") : null;
+
+        if (usuarioActivo == null) {
+            response.sendRedirect(request.getContextPath() + "/Login");
+            return;
         }
+
+        try {
+            CarteraDAO carteraDAO = new CarteraDAO();
+            TransaccionDAO transaccionDAO = new TransaccionDAO();
+
+            Optional<Cartera> optCartera = carteraDAO.obtenerCarteraPorUsuario(usuarioActivo.getIdUsuario());
+            if (!optCartera.isPresent()) {
+                throw new BDException("No se encontró la billetera del usuario.");
+            }
+            Cartera miCartera = optCartera.get();
+
+            String fechaInicioStr = request.getParameter("fechaInicio");
+            String fechaFinStr = request.getParameter("fechaFin");
+
+            LocalDate fechaInicio = (fechaInicioStr != null && !fechaInicioStr.isEmpty()) ? LocalDate.parse(fechaInicioStr) : null;
+            LocalDate fechaFin = (fechaFinStr != null && !fechaFinStr.isEmpty()) ? LocalDate.parse(fechaFinStr) : null;
+
+            List<Transaccion> miHistorial = transaccionDAO.listarTransacciones(miCartera.getIdCartera(), fechaInicio, fechaFin);
+
+            request.setAttribute("miCartera", miCartera);
+            request.setAttribute("miHistorial", miHistorial);
+
+        } catch (BDException e) {
+            request.setAttribute("error", "Error al cargar la cartera: " + e.getMessage());
+        } catch (Exception e) {
+            request.setAttribute("error", "Formato de fecha inválido.");
+        }
+
+        request.getRequestDispatcher("/PaginasUsuarios/cartera.jsp").forward(request, response);
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String accion = request.getParameter("accion");
+        HttpSession sesion = request.getSession();
+        Usuario usuarioActivo = (Usuario) sesion.getAttribute("usuarioLogueado");
+
+        if ("recargar".equals(accion)) {
+            try {
+                double monto = Double.parseDouble(request.getParameter("monto"));
+                if (monto <= 0) {
+                    sesion.setAttribute("error", "El monto de recarga debe ser mayor a Q.0.00");
+                } else {
+                    CarteraDAO carteraDAO = new CarteraDAO();
+                    Optional<Cartera> cartera = carteraDAO.obtenerCarteraPorUsuario(usuarioActivo.getIdUsuario());
+
+                    if (cartera.isPresent()) {
+                        carteraDAO.agregarFondosYRegistrar(usuarioActivo.getIdUsuario(), cartera.get().getIdCartera(), monto, "Recarga de fondos desde plataforma");
+                        sesion.setAttribute("mensajeExito", "Has recargado Q." + String.format("%.2f", monto) + " a tu billetera!");
+                    } else {
+                        sesion.setAttribute("error", "Cartera no encontrada.");
+                    }
+                }
+            } catch (NumberFormatException e) {
+                sesion.setAttribute("error", "Formato de monto inválido.");
+            } catch (BDException e) {
+                sesion.setAttribute("error", "Error al procesar el pago: " + e.getMessage());
+            }
+        }
+        response.sendRedirect(request.getContextPath() + "/Mi_Cartera");
     }
-
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
 }

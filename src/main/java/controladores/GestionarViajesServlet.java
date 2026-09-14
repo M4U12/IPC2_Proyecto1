@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controladores;
 
 import dao.BusDAO;
@@ -18,8 +14,6 @@ import modelos.Usuario;
 import modelos.Enums;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
-import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -49,17 +43,18 @@ public class GestionarViajesServlet extends HttpServlet {
         try {
             int miSucursal = usuarioActivo.getIdSucursalAsignada();
 
-            request.setAttribute("listaViajes", viajeDAO.listarViajesRegularesPorSucursal(miSucursal));
-            request.setAttribute("listaRutas", rutaDAO.listarRutasPorSucursal(miSucursal));
             request.setAttribute("listaBuses", busDAO.listarBusesPorSucursal(miSucursal, true));
             request.setAttribute("listaChoferes", choferDAO.listarChoferesPorSucursal(miSucursal, true));
             request.setAttribute("listaSucursales", sucursalDAO.listarSucursales());
+            request.setAttribute("listaViajes", viajeDAO.listarViajesRegularesPorSucursal(miSucursal));
+            request.setAttribute("listaRutas", rutaDAO.listarRutasPorSucursal(miSucursal));
+
+            request.getRequestDispatcher("/AdminSucursal/programar_viajes.jsp").forward(request, response);
 
         } catch (BDException e) {
             request.setAttribute("error", "Error al cargar datos: " + e.getMessage());
+            request.getRequestDispatcher("/AdminSucursal/programar_viajes.jsp").forward(request, response);
         }
-
-        request.getRequestDispatcher("/AdminSucursal/programar_viajes.jsp").forward(request, response);
     }
 
     @Override
@@ -78,16 +73,14 @@ public class GestionarViajesServlet extends HttpServlet {
             } else if ("cancelar".equals(accion)) {
                 int idViaje = Integer.parseInt(request.getParameter("id_viaje"));
                 new ViajeDAO().cancelarViaje(idViaje);
-                request.getSession().setAttribute("mensajeExito", "Viaje cancelado (los boletos pueden ser reembolsados).");
+                request.getSession().setAttribute("mensajeExito", "Viaje cancelado.");
             } else if ("iniciar_viaje".equals(accion)) {
                 procesarInicio(request);
             } else if ("finalizar_viaje".equals(accion)) {
                 procesarFinalizacion(request);
             }
-        } catch (BDException e) {
+        } catch (Exception e) {
             request.getSession().setAttribute("error", e.getMessage());
-        } catch (NumberFormatException | DateTimeParseException e) {
-            request.getSession().setAttribute("error", "Error en el formato de los datos ingresados.");
         }
 
         response.sendRedirect(request.getContextPath() + "/Gestionar_Viajes");
@@ -98,12 +91,10 @@ public class GestionarViajesServlet extends HttpServlet {
         LocalDateTime fechaLlegada = LocalDateTime.parse(request.getParameter("fecha_llegada"));
 
         if (fechaSalida.isAfter(fechaLlegada) || fechaSalida.isEqual(fechaLlegada)) {
-            request.getSession().setAttribute("error", "La fecha de llegada debe ser posterior a la salida.");
-            return;
+            throw new BDException("La fecha de llegada debe ser posterior a la salida.");
         }
 
         Viaje nuevoViaje = new Viaje();
-        nuevoViaje.setTipoViaje(Enums.TipoViaje.REGULAR);
         nuevoViaje.setEstadoViaje(Enums.EstadoViaje.PROGRAMADO);
         nuevoViaje.setIdRuta(Integer.parseInt(request.getParameter("id_ruta")));
         nuevoViaje.setIdBus(Integer.parseInt(request.getParameter("id_bus")));
@@ -120,8 +111,7 @@ public class GestionarViajesServlet extends HttpServlet {
         LocalDateTime fechaLlegada = LocalDateTime.parse(request.getParameter("fecha_llegada"));
 
         if (fechaSalida.isAfter(fechaLlegada) || fechaSalida.isEqual(fechaLlegada)) {
-            request.getSession().setAttribute("error", "La fecha de llegada debe ser posterior a la salida.");
-            return;
+            throw new BDException("La fecha de llegada debe ser posterior a la salida.");
         }
 
         Viaje viajeEditado = new Viaje();
@@ -145,7 +135,7 @@ public class GestionarViajesServlet extends HttpServlet {
         request.getSession().setAttribute("mensajeExito", "¡Buen viaje! Salida registrada oficialmente.");
     }
 
-    private void procesarFinalizacion(HttpServletRequest request) throws BDException {
+    private void procesarFinalizacion(HttpServletRequest request) throws Exception {
         int idViaje = Integer.parseInt(request.getParameter("id_viaje"));
         int idBus = Integer.parseInt(request.getParameter("id_bus"));
         double kilometrajeFinal = Double.parseDouble(request.getParameter("kilometraje_llegada"));
@@ -153,9 +143,7 @@ public class GestionarViajesServlet extends HttpServlet {
         LocalDateTime fechaHoraReal = LocalDateTime.parse(request.getParameter("fecha_hora_llegada_real"));
 
         new ViajeDAO().finalizarViaje(idViaje, kilometrajeFinal, gastoCombustible, fechaHoraReal);
-
-        // sumar kilometraje a la unidad para el control de desgaste
-        new BusDAO().actualizarEstadoOperativoYKilometraje(idBus, "Activo", kilometrajeFinal);
+        new BusDAO().actualizarEstadoOperativoYKilometraje(idBus, Enums.EstadoOperativo.DISPONIBLE, kilometrajeFinal);
 
         request.getSession().setAttribute("mensajeExito", "Llegada registrada. Viaje finalizado con éxito.");
     }

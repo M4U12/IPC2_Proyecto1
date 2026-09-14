@@ -1,12 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controladores;
 
 import dao.BusDAO;
 import dao.ChoferDAO;
-import dao.ViajeDAO;
 import excepciones.BDException;
 import modelos.Bus;
 import modelos.Chofer;
@@ -24,10 +19,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
 
-/**
- *
- * @author ACER
- */
 @WebServlet(name = "GestionarBusesServlet", urlPatterns = {"/Gestionar_Buses"})
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 5, maxRequestSize = 1024 * 1024 * 10)
 public class GestionarBusesServlet extends HttpServlet {
@@ -44,14 +35,13 @@ public class GestionarBusesServlet extends HttpServlet {
 
         BusDAO busDAO = new BusDAO();
         ChoferDAO choferDAO = new ChoferDAO();
-        
+
         try {
             int idMiSucursal = usuarioActivo.getIdSucursalAsignada();
-            
-            // Se cargan los buses de la sucursal y los choferes activos (para el select de asignación)
+
             List<Bus> listaBuses = busDAO.listarBusesPorSucursal(idMiSucursal, false);
             List<Chofer> listaChoferesActivos = choferDAO.listarChoferesPorSucursal(idMiSucursal, true);
-            
+
             request.setAttribute("listaBuses", listaBuses);
             request.setAttribute("listaChoferes", listaChoferesActivos);
         } catch (BDException e) {
@@ -77,27 +67,34 @@ public class GestionarBusesServlet extends HttpServlet {
 
         try {
             if ("crear".equals(accion) || "editar".equals(accion)) {
+
+                // valida que el bus no esté ocupado antes de permitir la edición
+                if ("editar".equals(accion)) {
+                    int idBus = Integer.parseInt(request.getParameter("id_bus"));
+                    busDAO.validarBusLibre(idBus);
+                }
+
                 String placa = request.getParameter("placa").toUpperCase();
                 String marca = request.getParameter("marca");
                 String modelo = request.getParameter("modelo");
                 int anio = Integer.parseInt(request.getParameter("anio_fabricacion"));
                 int capacidad = Integer.parseInt(request.getParameter("capacidad"));
-                
+
                 if (!placa.matches("^C\\d{3}[A-Z]{3}$")) {
                     request.getSession().setAttribute("error", "La placa debe iniciar con 'C', seguida de 3 números y 3 letras (Ej. C123ABC).");
                     response.sendRedirect(request.getContextPath() + "/Gestionar_Buses");
                     return;
                 }
-                
+
                 if (!placa.matches("^[A-Z0-9]{7}$")) {
                     request.getSession().setAttribute("error", "La placa debe contener 7 caracteres alfanuméricos.");
                     response.sendRedirect(request.getContextPath() + "/Gestionar_Buses");
                     return;
                 }
 
-                String fotoBase64 = "editar".equals(accion) ? request.getParameter("foto_actual") : ""; 
+                String fotoBase64 = "editar".equals(accion) ? request.getParameter("foto_actual") : "";
                 Part filePart = request.getPart("foto");
-                
+
                 if (filePart != null && filePart.getSize() > 0) {
                     byte[] imageBytes = filePart.getInputStream().readAllBytes();
                     fotoBase64 = Base64.getEncoder().encodeToString(imageBytes);
@@ -124,23 +121,20 @@ public class GestionarBusesServlet extends HttpServlet {
                     busDAO.actualizarBus(bus);
                     request.getSession().setAttribute("mensajeExito", "Datos del bus actualizados.");
                 }
-            } 
-            else if ("cambiarEstado".equals(accion)) {
+            } else if ("cambiarEstado".equals(accion)) {
                 int idBus = Integer.parseInt(request.getParameter("id_bus"));
                 boolean nuevoEstado = Boolean.parseBoolean(request.getParameter("nuevo_estado"));
-                
-                ViajeDAO viaje = new ViajeDAO();
-                if (!nuevoEstado && viaje.tieneViajesActivosPorBus(idBus)) {
-                    request.getSession().setAttribute("error", "Denegado: El bus no puede ser dado de baja porque tiene viajes en curso o programados.");
-                    response.sendRedirect(request.getContextPath() + "/Gestionar_Buses");
-                    return;
+
+                // valida que el bus no esté en un viaje solo si se está intentando deshabilitar (false)
+                if (!nuevoEstado) {
+                    busDAO.validarBusLibre(idBus);
                 }
-                
+
                 busDAO.cambiarEstadoBus(idBus, nuevoEstado);
                 request.getSession().setAttribute("mensajeExito", "Estado del vehículo actualizado.");
             }
         } catch (BDException | IllegalArgumentException e) {
-            request.getSession().setAttribute("error", "Error procesando la solicitud: " + e.getMessage());
+            request.getSession().setAttribute("error", e.getMessage());
         }
 
         response.sendRedirect(request.getContextPath() + "/Gestionar_Buses");

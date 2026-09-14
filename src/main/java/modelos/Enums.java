@@ -6,7 +6,10 @@ public class Enums {
         PROGRAMADO,
         EN_CURSO,
         FINALIZADO,
-        CANCELADO
+        CANCELADO,
+        PENDIENTE,
+        COTIZADA,
+        PAGADA,
     }
 
     public enum TipoViaje {
@@ -19,19 +22,32 @@ public class Enums {
         ADMINISTRADOR_SUCURSAL,
         CLIENTE,
     }
-    
-    public enum TipoLicencia{
+
+    public enum TipoLicencia {
         TIPO_A,
         TIPO_B,
         TIPO_C,
         TIPO_D,
         TIPO_E
     }
-    
-    public enum EstadoOperativo{
+
+    public enum EstadoOperativo {
         DISPONIBLE,
         EN_RUTA,
         EN_MANTENIMIENTO,
         INACTIVO,
+    }
+
+    public enum TipoTransacciones {
+        RECARGA,
+        PAGO_BOLETO,
+        PAGO_ALQUILER
+    }
+
+    public enum EstadoSolicitud {
+        PENDIENTE,
+        COTIZADA,
+        PAGADA,
+        RECHAZADA
     }
 }

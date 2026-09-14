@@ -1,6 +1,6 @@
+<%@page import="java.time.LocalDateTime"%>
 <%@page import="java.time.format.DateTimeFormatter"%>
 <%@page import="java.util.List"%>
-<%@page import="java.util.ArrayList"%>
 <%@page import="modelos.Viaje"%>
 <%@page import="modelos.Ruta"%>
 <%@page import="modelos.Bus"%>
@@ -16,7 +16,7 @@
         <title>Programación de Viajes - Code 'n Buses</title>
         <jsp:include page="/Componentes/recursos.jsp" />
     </head>
-    <body>
+    <body class="bg-light">
         <div class="container-fluid p-0">
             <div class="row g-0">
                 <jsp:include page="/Componentes/sidebar.jsp" />
@@ -32,8 +32,8 @@
 
                         DateTimeFormatter formatoFechaTabla = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
                         DateTimeFormatter formatoFechaInput = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+                        String fechaActual = LocalDateTime.now().format(formatoFechaInput);
 
-                        // nombre de la sucursal de origen
                         int miSucursalId = ((Usuario) session.getAttribute("usuarioLogueado")).getIdSucursalAsignada();
                         String nombreOrigen = "Mi Sucursal";
 
@@ -45,18 +45,6 @@
                                 }
                             }
                         }
-
-                        // para la disponibilidad
-                        List<Integer> busesOcupados = new ArrayList<>();
-                        List<Integer> choferesOcupados = new ArrayList<>();
-                        if (listaViajes != null) {
-                            for (Viaje v : listaViajes) {
-                                if (v.getEstadoViaje() == Enums.EstadoViaje.PROGRAMADO || v.getEstadoViaje() == Enums.EstadoViaje.EN_CURSO) {
-                                    busesOcupados.add(v.getIdBus());
-                                    choferesOcupados.add(v.getIdChofer());
-                                }
-                            }
-                        }
                     %>
 
                     <div class="p-4 bg-white rounded-4 shadow-sm mb-4">
@@ -64,13 +52,15 @@
                             <i class="bi bi-building me-2"></i> 
                             <%= nombreOrigen%> <span class="text-muted fs-4">(Sucursal #<%= miSucursalId%>)</span>
                         </h2>
-                        <p class="text-muted mb-0">Programa salidas, asigna unidades.</p>
+                        <p class="text-muted mb-0">Programa salidas regulares y asigna unidades a rutas establecidas.</p>
 
                         <% if (session.getAttribute("mensajeExito") != null) {%>
                         <div class="alert alert-success mt-3 mb-0"><%= session.getAttribute("mensajeExito")%></div>
                         <% session.removeAttribute("mensajeExito"); %>
                         <% } %>
-                        <% if (session.getAttribute("error") != null) {%>
+                        <% if (request.getAttribute("error") != null) {%>
+                        <div class="alert alert-danger mt-3 mb-0"><%= request.getAttribute("error")%></div>
+                        <% } else if (session.getAttribute("error") != null) {%>
                         <div class="alert alert-danger mt-3 mb-0"><%= session.getAttribute("error")%></div>
                         <% session.removeAttribute("error"); %>
                         <% } %>
@@ -111,12 +101,9 @@
                                         <select class="form-select" name="id_bus" required>
                                             <option value="">Selecciona el bus...</option>
                                             <% if (listaBuses != null) {
-                                                    for (Bus b : listaBuses) {
-                                                        if (!busesOcupados.contains(b.getIdBus())) {
-                                            %>
+                                                    for (Bus b : listaBuses) {%>
                                             <option value="<%= b.getIdBus()%>">Placa: <%= b.getPlaca()%> (<%= b.getCapacidad()%> Asientos)</option>
                                             <% }
-                                                    }
                                                 } %>
                                         </select>
                                     </div>
@@ -126,24 +113,21 @@
                                         <select class="form-select" name="id_chofer" required>
                                             <option value="">Selecciona el chofer...</option>
                                             <% if (listaChoferes != null) {
-                                                    for (Chofer c : listaChoferes) {
-                                                        if (!choferesOcupados.contains(c.getIdChofer())) {
-                                            %>
+                                                    for (Chofer c : listaChoferes) {%>
                                             <option value="<%= c.getIdChofer()%>"><%= c.getNombre()%></option>
                                             <% }
-                                                    }
-                                                } %>
+                                                }%>
                                         </select>
                                     </div>
 
                                     <div class="mb-3">
                                         <label class="form-label text-muted small fw-bold">Salida Programada</label>
-                                        <input type="datetime-local" class="form-control" name="fecha_salida" required>
+                                        <input type="datetime-local" class="form-control" name="fecha_salida" id="salida_nueva" min="<%= fechaActual%>" onchange="document.getElementById('llegada_nueva').min = this.value;" required>
                                     </div>
 
                                     <div class="mb-4">
                                         <label class="form-label text-muted small fw-bold">Llegada Estimada</label>
-                                        <input type="datetime-local" class="form-control" name="fecha_llegada" required>
+                                        <input type="datetime-local" class="form-control" name="fecha_llegada" id="llegada_nueva" min="<%= fechaActual%>" required>
                                     </div>
 
                                     <button type="submit" class="btn btn-primary w-100 fw-bold">Publicar Viaje</button>
@@ -168,13 +152,8 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <!-- 
-                                            1. Identifica la ruta específica asociada al viaje actual
-                                            2. Extrae el id de la sucursal de destino configurada en esa ruta.
-                                            3. Busca dicho id en el catálogo de sucursales para obtener el nombre real.-->
                                             <% if (listaViajes != null && !listaViajes.isEmpty()) {
                                                     for (Viaje v : listaViajes) {
-
                                                         String nombreDestino = "Desconocido";
                                                         if (listaRutas != null) {
                                                             for (Ruta r : listaRutas) {
@@ -193,9 +172,7 @@
                                                         }
                                             %>
                                             <tr>
-                                                <td class="fw-bold text-primary">
-                                                    <%= v.getFechaHoraSalidaEstimada().format(formatoFechaTabla)%>
-                                                </td>
+                                                <td class="fw-bold text-primary"><%= v.getFechaHoraSalidaEstimada().format(formatoFechaTabla)%></td>
                                                 <td><i class="bi bi-signpost-split-fill text-secondary me-1"></i> <%= nombreDestino%></td>
                                                 <td>#<%= v.getIdBus()%></td>
                                                 <td>#<%= v.getIdChofer()%></td>
@@ -211,43 +188,40 @@
                                                         else if (v.getEstadoViaje() == Enums.EstadoViaje.CANCELADO)
                                                             colorBadge = "bg-danger";
                                                     %>
-                                                    <span class="badge <%= colorBadge%>"><%= v.getEstadoViaje().name()%></span>
+                                                    <span class="badge <%= colorBadge%>"><%= v.getEstadoViaje() != null ? v.getEstadoViaje().name() : "N/A"%></span>
                                                 </td>
                                                 <td>
                                                     <div class="d-flex gap-2 justify-content-center">
                                                         <% if (v.getEstadoViaje() == Enums.EstadoViaje.PROGRAMADO) {%>
-                                                        <!-- Controles Pre-Viaje -->
                                                         <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalEditar<%= v.getIdViaje()%>" title="Editar Viaje">
                                                             <i class="bi bi-pencil-square"></i>
                                                         </button>
                                                         <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalIniciar<%= v.getIdViaje()%>" title="Registrar Salida Real">
                                                             <i class="bi bi-play-fill"></i> Salida
                                                         </button>
-                                                        <form action="${pageContext.request.contextPath}/Gestionar_Viajes" method="POST" class="m-0" onsubmit="return confirm('¿Seguro que deseas CANCELAR este viaje? (Esta acción no se puede deshacer)');">
+
+                                                        <form action="${pageContext.request.contextPath}/Gestionar_Viajes" method="POST" class="m-0" onsubmit="return confirm('¿Seguro que deseas CANCELAR este viaje?');">
                                                             <input type="hidden" name="accion" value="cancelar">
                                                             <input type="hidden" name="id_viaje" value="<%= v.getIdViaje()%>">
                                                             <button type="submit" class="btn btn-sm btn-outline-warning" title="Cancelar Viaje"><i class="bi bi-x-octagon"></i></button>
                                                         </form>
-                                                        <form action="${pageContext.request.contextPath}/Gestionar_Viajes" method="POST" class="m-0" onsubmit="return confirm('¿Eliminar viaje permanentemente? Solo se permite si no hay boletos vendidos.');">
+
+                                                        <form action="${pageContext.request.contextPath}/Gestionar_Viajes" method="POST" class="m-0" onsubmit="return confirm('¿Eliminar viaje permanentemente?');">
                                                             <input type="hidden" name="accion" value="eliminar">
                                                             <input type="hidden" name="id_viaje" value="<%= v.getIdViaje()%>">
                                                             <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>
                                                         </form>
 
                                                         <% } else if (v.getEstadoViaje() == Enums.EstadoViaje.EN_CURSO) {%>
-                                                        <!-- Control Post-Viaje -->
                                                         <button type="button" class="btn btn-sm btn-dark" data-bs-toggle="modal" data-bs-target="#modalFinalizar<%= v.getIdViaje()%>">
-                                                            <i class="bi bi-stop-fill"></i> Registrar Llegada
+                                                            <i class="bi bi-stop-fill"></i> Llegada
                                                         </button>
-
                                                         <% } else { %>
                                                         <span class="text-muted small fw-bold"><i class="bi bi-lock-fill"></i> Bloqueado</span>
                                                         <% } %>
                                                     </div>
                                                 </td>
                                             </tr>
-
-                                            <!-- MODALES -->
 
                                             <!-- Modal Editar -->
                                             <% if (v.getEstadoViaje() == Enums.EstadoViaje.PROGRAMADO) {%>
@@ -264,40 +238,14 @@
                                                             <input type="hidden" name="id_viaje" value="<%= v.getIdViaje()%>">
 
                                                             <div class="mb-3">
-                                                                <label class="form-label text-muted small fw-bold">Ruta Comercial</label>
-                                                                <select class="form-select" name="id_ruta" required>
-                                                                    <% if (listaRutas != null) {
-                                                                            for (Ruta r : listaRutas) {
-                                                                                String destEdit = "Desconocido";
-                                                                                if (listaSucursales != null) {
-                                                                                    for (Sucursal s : listaSucursales) {
-                                                                                        if (s.getIdSucursal() == r.getIdDestino()) {
-                                                                                            destEdit = s.getNombre();
-                                                                                            break;
-                                                                                        }
-                                                                                    }
-                                                                                }
-                                                                    %>
-                                                                    <option value="<%= r.getIdRuta()%>" <%= r.getIdRuta() == v.getIdRuta() ? "selected" : ""%>>
-                                                                        <%= nombreOrigen%> ➔ <%= destEdit%>
-                                                                    </option>
-                                                                    <% }
-                                                                        } %>
-                                                                </select>
-                                                            </div>
-
-                                                            <div class="mb-3">
                                                                 <label class="form-label text-muted small fw-bold">Bus Asignado</label>
                                                                 <select class="form-select" name="id_bus" required>
                                                                     <% if (listaBuses != null) {
-                                                                            for (Bus b : listaBuses) {
-                                                                                if (!busesOcupados.contains(b.getIdBus()) || b.getIdBus() == v.getIdBus()) {
-                                                                    %>
+                                                                            for (Bus b : listaBuses) {%>
                                                                     <option value="<%= b.getIdBus()%>" <%= b.getIdBus() == v.getIdBus() ? "selected" : ""%>>
                                                                         Placa: <%= b.getPlaca()%> (<%= b.getCapacidad()%> Asientos)
                                                                     </option>
                                                                     <% }
-                                                                            }
                                                                         } %>
                                                                 </select>
                                                             </div>
@@ -306,14 +254,11 @@
                                                                 <label class="form-label text-muted small fw-bold">Chofer Designado</label>
                                                                 <select class="form-select" name="id_chofer" required>
                                                                     <% if (listaChoferes != null) {
-                                                                            for (Chofer c : listaChoferes) {
-                                                                                if (!choferesOcupados.contains(c.getIdChofer()) || c.getIdChofer() == v.getIdChofer()) {
-                                                                    %>
+                                                                            for (Chofer c : listaChoferes) {%>
                                                                     <option value="<%= c.getIdChofer()%>" <%= c.getIdChofer() == v.getIdChofer() ? "selected" : ""%>>
                                                                         <%= c.getNombre()%>
                                                                     </option>
                                                                     <% }
-                                                                            }
                                                                         }%>
                                                                 </select>
                                                             </div>
@@ -322,44 +267,44 @@
                                                                 <label class="form-label text-muted small fw-bold">Salida Programada</label>
                                                                 <input type="datetime-local" class="form-control" name="fecha_salida" value="<%= v.getFechaHoraSalidaEstimada().format(formatoFechaInput)%>" required>
                                                             </div>
-
                                                             <div class="mb-3">
                                                                 <label class="form-label text-muted small fw-bold">Llegada Estimada</label>
                                                                 <input type="datetime-local" class="form-control" name="fecha_llegada" value="<%= v.getFechaHoraLlegadaEstimada().format(formatoFechaInput)%>" required>
                                                             </div>
+
+                                                            <input type="hidden" name="id_ruta" value="<%= v.getIdRuta()%>">
                                                         </div>
                                                         <div class="modal-footer bg-light">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                                                             <button type="submit" class="btn btn-primary fw-bold">Guardar Cambios</button>
                                                         </div>
                                                     </form>
                                                 </div>
                                             </div>
                                         </div>
+                                        <% } %>
 
                                         <!-- Modal Iniciar Salida -->
-                                        <%
-                                            // busqueda del nombre del chofer y placa del bus para la alerta del modal
-                                            String nombreChoferSalida = "Desconocido";
-                                            String placaBusSalida = "Desconocida";
-
-                                            if (listaChoferes != null) {
-                                                for (Chofer c : listaChoferes) {
-                                                    if (c.getIdChofer() == v.getIdChofer()) {
-                                                        nombreChoferSalida = c.getNombre();
-                                                        break;
+                                        <% if (v.getEstadoViaje() == Enums.EstadoViaje.PROGRAMADO) {
+                                                String nombreChoferSalida = "Desconocido";
+                                                String placaBusSalida = "Desconocida";
+                                                double kilometrajeAcumulado = 0.0;
+                                                if (listaChoferes != null) {
+                                                    for (Chofer c : listaChoferes) {
+                                                        if (c.getIdChofer() == v.getIdChofer()) {
+                                                            nombreChoferSalida = c.getNombre();
+                                                            break;
+                                                        }
                                                     }
                                                 }
-                                            }
-
-                                            if (listaBuses != null) {
-                                                for (Bus b : listaBuses) {
-                                                    if (b.getIdBus() == v.getIdBus()) {
-                                                        placaBusSalida = b.getPlaca();
-                                                        break;
+                                                if (listaBuses != null) {
+                                                    for (Bus b : listaBuses) {
+                                                        if (b.getIdBus() == v.getIdBus()) {
+                                                            placaBusSalida = b.getPlaca();
+                                                            kilometrajeAcumulado = b.getKilometrajeActual();
+                                                            break;
+                                                        }
                                                     }
                                                 }
-                                            }
                                         %>
                                         <div class="modal fade text-start" id="modalIniciar<%= v.getIdViaje()%>" tabindex="-1" aria-hidden="true">
                                             <div class="modal-dialog">
@@ -368,28 +313,23 @@
                                                         <h5 class="modal-title fw-bold">Autorizar Salida</h5>
                                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                                     </div>
-                                                    <form action="${pageContext.request.contextPath}/Gestionar_Viajes" method="POST" onsubmit="return confirm('ATENCIÓN: El registro de salida es inmutable y cerrará la venta de boletos. ¿Confirmar datos?');">
+                                                    <form action="${pageContext.request.contextPath}/Gestionar_Viajes" method="POST" onsubmit="return confirm('ATENCIÓN: El registro de salida cerrará la venta de boletos.');">
                                                         <div class="modal-body">
                                                             <input type="hidden" name="accion" value="iniciar_viaje">
                                                             <input type="hidden" name="id_viaje" value="<%= v.getIdViaje()%>">
 
-                                                            <div class="alert succes-warning small">
-                                                                Chofer encargado: <b><%= nombreChoferSalida%></b> <br> Bus con placas <b><%= placaBusSalida%></b>.
-                                                            </div>
+                                                            <div class="alert alert-success small">Chofer: <b><%= nombreChoferSalida%></b> <br> Placas: <b><%= placaBusSalida%></b>.</div>
 
                                                             <div class="mb-3">
-                                                                <label class="form-label fw-bold">Hora Exacta de Salida</label>
-                                                                <input type="datetime-local" class="form-control border-success" name="fecha_hora_salida_real" required>
+                                                                <label class="form-label fw-bold">Kilometraje al Arrancar</label>
+                                                                <input type="number" step="0.1" min="<%= kilometrajeAcumulado%>" value="<%= kilometrajeAcumulado%>" class="form-control border-success" name="kilometraje_salida" required>
                                                             </div>
                                                             <div class="mb-3">
-                                                                <label class="form-label fw-bold">Kilometraje al Arrancar</label>
-                                                                <input type="number" step="0.1" min="0" class="form-control border-success" name="kilometraje_salida" required>
+                                                                <label class="form-label fw-bold">Hora Exacta de Salida</label>
+                                                                <input type="datetime-local" class="form-control border-success" name="fecha_hora_salida_real" value="<%= fechaActual%>" required>
                                                             </div>
                                                         </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                            <button type="submit" class="btn btn-success fw-bold">Confirmar Salida</button>
-                                                        </div>
+                                                        <div class="modal-footer"><button type="submit" class="btn btn-success fw-bold">Confirmar Salida</button></div>
                                                     </form>
                                                 </div>
                                             </div>
@@ -397,7 +337,9 @@
                                         <% } %>
 
                                         <!-- Modal Finalizar Llegada -->
-                                        <% if (v.getEstadoViaje() == Enums.EstadoViaje.EN_CURSO) {%>
+                                        <% if (v.getEstadoViaje() == Enums.EstadoViaje.EN_CURSO) {
+                                                double kmSeguroSalida = (v.getKilometrajeSalida() != null) ? v.getKilometrajeSalida() : 0.0;
+                                        %>
                                         <div class="modal fade text-start" id="modalFinalizar<%= v.getIdViaje()%>" tabindex="-1" aria-hidden="true">
                                             <div class="modal-dialog">
                                                 <div class="modal-content border-dark">
@@ -405,47 +347,36 @@
                                                         <h5 class="modal-title fw-bold">Reporte de Llegada</h5>
                                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                                     </div>
-                                                    <form action="${pageContext.request.contextPath}/Gestionar_Viajes" method="POST" onsubmit="return confirm('ATENCIÓN: El registro de llegada es inmutable y el cálculo de depreciación será definitivo. ¿Confirmar?');">
+                                                    <form action="${pageContext.request.contextPath}/Gestionar_Viajes" method="POST">
                                                         <div class="modal-body">
                                                             <input type="hidden" name="accion" value="finalizar_viaje">
                                                             <input type="hidden" name="id_viaje" value="<%= v.getIdViaje()%>">
                                                             <input type="hidden" name="id_bus" value="<%= v.getIdBus()%>">
 
-                                                            <div class="alert alert-info small">
-                                                                El kilometraje registrado sumará desgaste al Bus #<%= v.getIdBus()%> para el cálculo de depreciación.
-                                                            </div>
+                                                            <input type="hidden" name="km_salida" value="<%= kmSeguroSalida%>">
 
                                                             <div class="mb-3">
-                                                                <label class="form-label fw-bold">Hora Exacta de Llegada</label>
-                                                                <input type="datetime-local" class="form-control" name="fecha_hora_llegada_real" required>
-                                                            </div>
-                                                            <div class="mb-3">
                                                                 <label class="form-label fw-bold">Kilometraje Final del Bus</label>
-                                                                <input type="number" step="0.1" min="0" class="form-control" name="kilometraje_llegada" required>
+                                                                <input type="number" step="0.1" min="<%= kmSeguroSalida%>" value="<%= kmSeguroSalida%>" class="form-control" name="kilometraje_llegada" required>
                                                             </div>
                                                             <div class="mb-3">
                                                                 <label class="form-label fw-bold">Gasto en Combustible (Q)</label>
                                                                 <input type="number" step="0.01" min="0" class="form-control" name="gasto_combustible" required>
                                                             </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-bold">Hora Real de Llegada</label>
+                                                                <input type="datetime-local" class="form-control" name="fecha_hora_llegada_real" value="<%= fechaActual%>" required>
+                                                            </div>
                                                         </div>
-                                                        <div class="modal-footer bg-light">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                            <button type="submit" class="btn btn-dark fw-bold">Finalizar Operación</button>
-                                                        </div>
+                                                        <div class="modal-footer"><button type="submit" class="btn btn-dark fw-bold">Finalizar Operación</button></div>
                                                     </form>
                                                 </div>
                                             </div>
                                         </div>
                                         <% } %>
-
                                         <%  }
                                         } else { %>
-                                        <tr>
-                                            <td colspan="6" class="text-center text-muted py-4">
-                                                <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
-                                                Aún no hay viajes regulares programados en tu sucursal.
-                                            </td>
-                                        </tr>
+                                        <tr><td colspan="6" class="text-center text-muted py-4">Aún no hay viajes regulares programados en tu sucursal.</td></tr>
                                         <% }%>
                                         </tbody>
                                     </table>

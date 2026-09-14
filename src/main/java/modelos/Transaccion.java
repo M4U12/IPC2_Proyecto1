@@ -6,14 +6,14 @@ public class Transaccion {
     private int idTransaccion;
     private int idCartera;
     private double monto;
-    private String tipo;
+    private Enums.TipoTransacciones tipo;
     private LocalDateTime fechaHora;
     private String descripcion;
 
     public Transaccion() {
     }
 
-    public Transaccion(int idTransaccion, int idCartera, double monto, String tipo, LocalDateTime fechaHora, String descripcion) {
+    public Transaccion(int idTransaccion, int idCartera, double monto, Enums.TipoTransacciones tipo, LocalDateTime fechaHora, String descripcion) {
         this.idTransaccion = idTransaccion;
         this.idCartera = idCartera;
         this.monto = monto;
@@ -34,9 +34,6 @@ public class Transaccion {
         return monto;
     }
 
-    public String getTipo() {
-        return tipo;
-    }
 
     public LocalDateTime getFechaHora() {
         return fechaHora;
@@ -58,9 +55,14 @@ public class Transaccion {
         this.monto = monto;
     }
 
-    public void setTipo(String tipo) {
+    public void setTipo(Enums.TipoTransacciones tipo) {
         this.tipo = tipo;
     }
+
+    public Enums.TipoTransacciones getTipo() {
+        return tipo;
+    }
+
 
     public void setFechaHora(LocalDateTime fechaHora) {
         this.fechaHora = fechaHora;

@@ -113,4 +113,13 @@ public class ChoferDAO {
             throw new BDException("Error al cambiar el estado del chofer: " + e.getMessage(), e);
         }
     }
+
+    public void validarChoferLibre(int idChofer) throws BDException {
+        ViajeDAO vDAO = new ViajeDAO();
+        ViajePrivadoDAO vpDAO = new ViajePrivadoDAO();
+
+        if (vDAO.tieneViajesActivosPorChofer(idChofer) || vpDAO.tieneViajesPrivadosActivosPorChofer(idChofer)) {
+            throw new BDException("Operación denegada: El chofer está asignado a un viaje y no puede ser modificado.");
+        }
+    }
 }

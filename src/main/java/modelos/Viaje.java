@@ -3,25 +3,16 @@ package modelos;
 import java.time.LocalDateTime;
 
 public class Viaje {
+
     private int idViaje;
-    private Enums.TipoViaje tipoViaje;
     private Enums.EstadoViaje estadoViaje;
     private int idBus;
     private int idChofer;
-    private Integer idRuta; 
-    private Integer idCliente; 
-    
-    private String origenPrivado;
-    private String destinoPrivado;
-    private Integer cantidadPasajerosPrivado;
-    private Double precioTotalPrivado;
-    private LocalDateTime fechaRetornoPrivado;
-    
+    private int idRuta;
     private LocalDateTime fechaHoraSalidaEstimada;
     private LocalDateTime fechaHoraLlegadaEstimada;
     private LocalDateTime fechaHoraSalidaReal;
     private LocalDateTime fechaHoraLlegadaReal;
-    
     private Double kilometrajeSalida;
     private Double kilometrajeLlegada;
     private Double gastoCombustible;
@@ -29,19 +20,12 @@ public class Viaje {
     public Viaje() {
     }
 
-    public Viaje(int idViaje, Enums.TipoViaje tipoViaje, Enums.EstadoViaje estadoViaje, int idBus, int idChofer, Integer idRuta, Integer idCliente, String origenPrivado, String destinoPrivado, Integer cantidadPasajerosPrivado, Double precioTotalPrivado, LocalDateTime fechaRetornoPrivado, LocalDateTime fechaHoraSalidaEstimada, LocalDateTime fechaHoraLlegadaEstimada, LocalDateTime fechaHoraSalidaReal, LocalDateTime fechaHoraLlegadaReal, Double kilometrajeSalida, Double kilometrajeLlegada, Double gastoCombustible) {
+    public Viaje(int idViaje, Enums.EstadoViaje estadoViaje, int idBus, int idChofer, int idRuta, LocalDateTime fechaHoraSalidaEstimada, LocalDateTime fechaHoraLlegadaEstimada, LocalDateTime fechaHoraSalidaReal, LocalDateTime fechaHoraLlegadaReal, Double kilometrajeSalida, Double kilometrajeLlegada, Double gastoCombustible) {
         this.idViaje = idViaje;
-        this.tipoViaje = tipoViaje;
         this.estadoViaje = estadoViaje;
         this.idBus = idBus;
         this.idChofer = idChofer;
         this.idRuta = idRuta;
-        this.idCliente = idCliente;
-        this.origenPrivado = origenPrivado;
-        this.destinoPrivado = destinoPrivado;
-        this.cantidadPasajerosPrivado = cantidadPasajerosPrivado;
-        this.precioTotalPrivado = precioTotalPrivado;
-        this.fechaRetornoPrivado = fechaRetornoPrivado;
         this.fechaHoraSalidaEstimada = fechaHoraSalidaEstimada;
         this.fechaHoraLlegadaEstimada = fechaHoraLlegadaEstimada;
         this.fechaHoraSalidaReal = fechaHoraSalidaReal;
@@ -53,10 +37,6 @@ public class Viaje {
 
     public int getIdViaje() {
         return idViaje;
-    }
-
-    public Enums.TipoViaje getTipoViaje() {
-        return tipoViaje;
     }
 
     public Enums.EstadoViaje getEstadoViaje() {
@@ -71,32 +51,8 @@ public class Viaje {
         return idChofer;
     }
 
-    public Integer getIdRuta() {
+    public int getIdRuta() {
         return idRuta;
-    }
-
-    public Integer getIdCliente() {
-        return idCliente;
-    }
-
-    public String getOrigenPrivado() {
-        return origenPrivado;
-    }
-
-    public String getDestinoPrivado() {
-        return destinoPrivado;
-    }
-
-    public Integer getCantidadPasajerosPrivado() {
-        return cantidadPasajerosPrivado;
-    }
-
-    public Double getPrecioTotalPrivado() {
-        return precioTotalPrivado;
-    }
-
-    public LocalDateTime getFechaRetornoPrivado() {
-        return fechaRetornoPrivado;
     }
 
     public LocalDateTime getFechaHoraSalidaEstimada() {
@@ -131,10 +87,6 @@ public class Viaje {
         this.idViaje = idViaje;
     }
 
-    public void setTipoViaje(Enums.TipoViaje tipoViaje) {
-        this.tipoViaje = tipoViaje;
-    }
-
     public void setEstadoViaje(Enums.EstadoViaje estadoViaje) {
         this.estadoViaje = estadoViaje;
     }
@@ -147,32 +99,8 @@ public class Viaje {
         this.idChofer = idChofer;
     }
 
-    public void setIdRuta(Integer idRuta) {
+    public void setIdRuta(int idRuta) {
         this.idRuta = idRuta;
-    }
-
-    public void setIdCliente(Integer idCliente) {
-        this.idCliente = idCliente;
-    }
-
-    public void setOrigenPrivado(String origenPrivado) {
-        this.origenPrivado = origenPrivado;
-    }
-
-    public void setDestinoPrivado(String destinoPrivado) {
-        this.destinoPrivado = destinoPrivado;
-    }
-
-    public void setCantidadPasajerosPrivado(Integer cantidadPasajerosPrivado) {
-        this.cantidadPasajerosPrivado = cantidadPasajerosPrivado;
-    }
-
-    public void setPrecioTotalPrivado(Double precioTotalPrivado) {
-        this.precioTotalPrivado = precioTotalPrivado;
-    }
-
-    public void setFechaRetornoPrivado(LocalDateTime fechaRetornoPrivado) {
-        this.fechaRetornoPrivado = fechaRetornoPrivado;
     }
 
     public void setFechaHoraSalidaEstimada(LocalDateTime fechaHoraSalidaEstimada) {

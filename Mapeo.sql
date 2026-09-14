@@ -95,34 +95,48 @@ CREATE TABLE Rutas (
 
 CREATE TABLE Viajes (
     id_viaje INT AUTO_INCREMENT PRIMARY KEY,
-    tipo_viaje ENUM('REGULAR', 'PRIVADO') NOT NULL,
     estado_viaje ENUM('PROGRAMADO', 'EN_CURSO', 'FINALIZADO', 'CANCELADO') DEFAULT 'PROGRAMADO',
-    
     id_bus INT NOT NULL,
     id_chofer INT NOT NULL,
-    id_ruta INT NULL, 
-    id_cliente INT NULL, 
-    
-    -- exclusivos de viajes privados
-    origen_privado VARCHAR(150) NULL,
-    destino_privado VARCHAR(150) NULL,
-    cantidad_pasajeros_privado INT NULL,
-    precio_total_privado DECIMAL(10,2) NULL,
-    fecha_retorno_privado DATETIME NULL,
-    --
+    id_ruta INT NOT NULL, 
     fecha_hora_salida_estimada DATETIME NOT NULL,
     fecha_hora_llegada_estimada DATETIME NOT NULL,
     fecha_hora_salida_real DATETIME NULL,
     fecha_hora_llegada_real DATETIME NULL,
+    kilometraje_salida DECIMAL(10,2) NULL,
+    kilometraje_llegada DECIMAL(10,2) NULL,
+    gasto_combustible DECIMAL(10,2) NULL,
+    FOREIGN KEY (id_bus) REFERENCES Buses(id_bus),
+    FOREIGN KEY (id_chofer) REFERENCES Choferes(id_chofer),
+    FOREIGN KEY (id_ruta) REFERENCES Rutas(id_ruta)
+);
+
+CREATE TABLE Viajes_Privados (
+    id_viaje_privado INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    id_sucursal INT NOT NULL,
+    origen VARCHAR(150) NOT NULL,
+    destino VARCHAR(150) NOT NULL,
+    cantidad_pasajeros INT NOT NULL,
+    precio DECIMAL(10,2) NULL,
+    estado ENUM('PENDIENTE', 'COTIZADA', 'PAGADA', 'EN_CURSO', 'FINALIZADO', 'CANCELADO') DEFAULT 'PENDIENTE',
     
+    -- Se llenan cuando el admin aprueba y programa
+    id_bus INT NULL,
+    id_chofer INT NULL,
+    
+    fecha_hora_salida_estimada DATETIME NOT NULL,
+    fecha_hora_llegada_estimada DATETIME NULL,
+    fecha_hora_salida_real DATETIME NULL,
+    fecha_hora_llegada_real DATETIME NULL,
     kilometraje_salida DECIMAL(10,2) NULL,
     kilometraje_llegada DECIMAL(10,2) NULL,
     gasto_combustible DECIMAL(10,2) NULL,
     
+    FOREIGN KEY (id_cliente) REFERENCES Usuarios(id_usuario),
+    FOREIGN KEY (id_sucursal) REFERENCES Sucursales(id_sucursal),
     FOREIGN KEY (id_bus) REFERENCES Buses(id_bus),
-    FOREIGN KEY (id_chofer) REFERENCES Choferes(id_chofer),
-    FOREIGN KEY (id_ruta) REFERENCES Rutas(id_ruta),
-    FOREIGN KEY (id_cliente) REFERENCES Usuarios(id_usuario)
+    FOREIGN KEY (id_chofer) REFERENCES Choferes(id_chofer)
 );
 
 
@@ -150,7 +164,7 @@ CREATE TABLE Transacciones (
     id_transaccion INT AUTO_INCREMENT PRIMARY KEY,
     id_cartera INT NOT NULL,
     monto DECIMAL(10,2) NOT NULL,
-    tipo ENUM('Recarga', 'Pago Boleto', 'Pago Alquiler') NOT NULL,
+    tipo ENUM('RECARGA', 'PAGO_BOLETO', 'PAGO_ALQUILER') NOT NULL,
     fecha_hora DATETIME NOT NULL,
     descripcion VARCHAR(150),
     FOREIGN KEY (id_cartera) REFERENCES Cartera(id_cartera)
