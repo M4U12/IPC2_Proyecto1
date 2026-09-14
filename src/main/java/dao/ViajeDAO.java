@@ -104,6 +104,22 @@ public class ViajeDAO {
         return listaViajes;
     }
 
+    public List<Viaje> listarViajesDisponibles() throws BDException {
+        List<Viaje> lista = new ArrayList<>();
+        String query = "SELECT * FROM viajes WHERE estado_viaje = 'PROGRAMADO' ORDER BY fecha_hora_salida_estimada ASC";
+
+        try (java.sql.Connection connection = conexionDB.getConection(); java.sql.PreparedStatement ps = connection.prepareStatement(query); java.sql.ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                lista.add(extraerViajeDeResultSet(rs)); 
+            }
+
+        } catch (SQLException e) {
+            throw new BDException("Error al cargar la cartelera de viajes: " + e.getMessage(), e);
+        }
+        return lista;
+    }
+
     public boolean iniciarViaje(int idViaje, double kilometrajeSalida, LocalDateTime fechaHoraSalidaReal) throws BDException {
         String query = "UPDATE viajes SET estado_viaje = 'EN_CURSO', kilometraje_salida = ?, fecha_hora_salida_real = ? WHERE id_viaje = ?";
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {

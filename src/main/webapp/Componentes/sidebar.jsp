@@ -9,7 +9,7 @@
 
     <strong class="text-secondary section-title mt-2 d-block">GENERAL</strong>
     <a href="${pageContext.request.contextPath}/index.jsp" class="bg-primary text-white">Inicio</a>
-    <a href="${pageContext.request.contextPath}/PaginasUsuarios/viajes_regulares.jsp">Viajes Disponibles</a>
+    <a href="${pageContext.request.contextPath}/Viajes_Disponibles">Viajes Disponibles</a>
     <a href="${pageContext.request.contextPath}/Solicitar_Privado">Solicitar Viaje Privado</a>
 
     <% if (usuario == null) { %>

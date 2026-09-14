@@ -62,6 +62,24 @@ public class RutaDAO {
         return listaRutas;
     }
 
+    public List<Ruta> listarTodasLasRutas() throws BDException {
+        List<Ruta> lista = new ArrayList<>();
+        String query = "SELECT * FROM rutas";
+        try (java.sql.Connection connection = conexionDB.getConection(); java.sql.PreparedStatement ps = connection.prepareStatement(query); java.sql.ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                modelos.Ruta ruta = new modelos.Ruta();
+                ruta.setIdRuta(rs.getInt("id_ruta"));
+                ruta.setIdOrigen(rs.getInt("id_origen"));
+                ruta.setIdDestino(rs.getInt("id_destino"));
+                ruta.setPrecio(rs.getDouble("precio"));
+                lista.add(ruta);
+            }
+        } catch (SQLException e) {
+            throw new BDException("Error al cargar rutas: " + e.getMessage(), e);
+        }
+        return lista;
+    }
+
     public boolean actualizarRuta(Ruta ruta) throws BDException {
         String query = "UPDATE rutas SET id_origen = ?, id_destino = ?, distancia_km = ?, precio = ? WHERE id_ruta = ?";
 
@@ -112,7 +130,7 @@ public class RutaDAO {
             ps.setInt(2, idDestino);
             try (java.sql.ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt(1) > 0; 
+                    return rs.getInt(1) > 0;
                 }
             }
         } catch (SQLException e) {
