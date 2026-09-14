@@ -19,7 +19,7 @@ public class MantenimientoDAO {
     }
     
     public boolean registrarMantenimiento(Mantenimiento mantenimiento) throws BDException {
-        String query = "INSERT INTO mantenimientos (id_bus, fecha_mantenimiento, monto_mano_obra, monto_repuestos, descripcion) VALUES (?, ?, ?, ?, ?)";
+        String query = "INSERT INTO mantenimiento (id_bus, fecha_mantenimiento, monto_mano_obra, monto_repuestos, descripcion) VALUES (?, ?, ?, ?, ?)";
         
         try (Connection connection = conexionDB.getConection(); 
              PreparedStatement ps = connection.prepareStatement(query)) {

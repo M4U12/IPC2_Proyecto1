@@ -2,6 +2,7 @@ package controladores;
 
 import dao.BusDAO;
 import dao.ChoferDAO;
+import dao.MantenimientoDAO;
 import excepciones.BDException;
 import modelos.Bus;
 import modelos.Chofer;
@@ -18,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
+import modelos.Mantenimiento;
 
 @WebServlet(name = "GestionarBusesServlet", urlPatterns = {"/Gestionar_Buses"})
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 5, maxRequestSize = 1024 * 1024 * 10)
@@ -132,6 +134,28 @@ public class GestionarBusesServlet extends HttpServlet {
 
                 busDAO.cambiarEstadoBus(idBus, nuevoEstado);
                 request.getSession().setAttribute("mensajeExito", "Estado del vehículo actualizado.");
+            } else if ("mantenimiento".equals(accion)) {
+                int idBus = Integer.parseInt(request.getParameter("id_bus"));
+                String nuevoEstado = request.getParameter("nuevo_estado_operativo");
+
+                if (Enums.EstadoOperativo.EN_MANTENIMIENTO.name().equals(nuevoEstado)) {
+                    busDAO.validarBusLibre(idBus);
+                }
+
+                busDAO.actualizarEstadoOperativo(idBus, Enums.EstadoOperativo.valueOf(nuevoEstado));
+                request.getSession().setAttribute("mensajeExito", "El bus ha pasado a estado: " + nuevoEstado);
+            } else if ("fin_mantenimiento".equals(accion)) {
+                int idBus = Integer.parseInt(request.getParameter("id_bus"));
+                java.time.LocalDate fecha = java.time.LocalDate.parse(request.getParameter("fecha_mantenimiento"));
+                double manoObra = Double.parseDouble(request.getParameter("monto_mano_obra"));
+                double repuestos = Double.parseDouble(request.getParameter("monto_repuestos"));
+                String descripcion = request.getParameter("descripcion");
+
+                Mantenimiento registro = new Mantenimiento(0, idBus, fecha, manoObra, repuestos, descripcion);
+                new MantenimientoDAO().registrarMantenimiento(registro);
+                
+                busDAO.actualizarEstadoOperativo(idBus, Enums.EstadoOperativo.DISPONIBLE);
+                request.getSession().setAttribute("mensajeExito", "Mantenimiento guardado en el historial. El bus vuelve a estar DISPONIBLE.");
             }
         } catch (BDException | IllegalArgumentException e) {
             request.getSession().setAttribute("error", e.getMessage());
