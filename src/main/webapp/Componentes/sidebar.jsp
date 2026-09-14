@@ -17,7 +17,7 @@
         <a href="${pageContext.request.contextPath}/Login" class="text-info">Iniciar Sesión</a>
     <% } else { %>
         <strong class="text-secondary section-title mt-4 d-block">MI CUENTA</strong>
-        <a href="${pageContext.request.contextPath}/PaginasUsuarios/comprar_boletos.jsp">Comprar Boletos</a>
+        <a href="${pageContext.request.contextPath}/Comprar_Boleto">Comprar Boletos</a>
         <a href="${pageContext.request.contextPath}/Mi_Perfil">Perfil</a>
         <a href="${pageContext.request.contextPath}/Mi_Cartera">Mi Cartera</a>
 

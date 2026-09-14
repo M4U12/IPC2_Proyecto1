@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import modelos.Bus;
 import modelos.Enums;
 
@@ -170,5 +171,31 @@ public class BusDAO {
         if (vDAO.tieneViajesActivosPorBus(idBus) || vpDAO.tieneViajesPrivadosActivosPorBus(idBus)) {
             throw new BDException("Operación denegada: El bus está asignado a un viaje programado o en curso.");
         }
+    }
+
+    public Optional<Bus> obtenerBusPorId(int idBus) throws BDException {
+        String query = "SELECT * FROM buses WHERE id_bus = ?";
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, idBus);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Integer idChofer = rs.getInt("id_chofer");
+                    if (rs.wasNull()) {
+                        idChofer = null;
+                    }
+
+                    Bus busEncontrado = new Bus(
+                            rs.getInt("id_bus"), rs.getInt("id_sucursal"), idChofer,
+                            rs.getString("foto"), rs.getString("placa"), rs.getString("marca"),
+                            rs.getString("modelo"), rs.getInt("anio_fabricacion"), rs.getInt("capacidad"),
+                            rs.getString("estado_operativo"), rs.getDouble("kilometraje_actual"), rs.getBoolean("estado")
+                    );
+                    return Optional.of(busEncontrado);
+                }
+            }
+        } catch (SQLException e) {
+            throw new BDException("Error al obtener el bus: " + e.getMessage(), e);
+        }
+        return Optional.empty();
     }
 }

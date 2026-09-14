@@ -30,16 +30,22 @@ public class PerfilClienteServlet extends HttpServlet {
         }
 
         try {
+            // Datos de Cartera y Privados
             CarteraDAO carteraDAO = new CarteraDAO();
             Optional<Cartera> optCartera = carteraDAO.obtenerCarteraPorUsuario(usuarioActivo.getIdUsuario());
-
             if (optCartera.isPresent()) {
                 request.setAttribute("miCartera", optCartera.get());
             }
-            ViajePrivadoDAO vpDAO = new ViajePrivadoDAO();
-            request.setAttribute("listaPrivadosCliente", vpDAO.listarPorCliente(usuarioActivo.getIdUsuario()));
+            request.setAttribute("listaPrivadosCliente", new ViajePrivadoDAO().listarPorCliente(usuarioActivo.getIdUsuario()));
+
+            // --- NUEVAS CARGAS PARA LA PESTAÑA REGULARES ---
+            request.setAttribute("listaBoletos", new dao.BoletoDAO().listarTodosBoletosPorCliente(usuarioActivo.getIdUsuario()));
+            request.setAttribute("listaViajesCliente", new dao.ViajeDAO().listarViajesPorUsuario(usuarioActivo.getIdUsuario()));
+            request.setAttribute("listaRutas", new dao.RutaDAO().listarTodasLasRutas());
+            request.setAttribute("listaSucursales", new dao.SucursalDAO().listarSucursales());
+
         } catch (excepciones.BDException e) {
-            request.setAttribute("error", "Error al cargar saldo: " + e.getMessage());
+            request.setAttribute("error", "Error al cargar tu perfil: " + e.getMessage());
         }
 
         request.getRequestDispatcher("/PaginasUsuarios/perfil.jsp").forward(request, response);

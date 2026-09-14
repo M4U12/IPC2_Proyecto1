@@ -1,7 +1,7 @@
 package controladores;
 
 import dao.RutaDAO;
-import dao.SucursalDAO; // Asumiendo que tienes este DAO
+import dao.SucursalDAO; 
 import excepciones.BDException;
 import modelos.Ruta;
 import modelos.Sucursal;

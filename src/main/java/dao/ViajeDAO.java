@@ -111,7 +111,7 @@ public class ViajeDAO {
         try (java.sql.Connection connection = conexionDB.getConection(); java.sql.PreparedStatement ps = connection.prepareStatement(query); java.sql.ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                lista.add(extraerViajeDeResultSet(rs)); 
+                lista.add(extraerViajeDeResultSet(rs));
             }
 
         } catch (SQLException e) {
@@ -218,10 +218,10 @@ public class ViajeDAO {
 
     public boolean tieneViajesActivosPorBus(int idBus) throws BDException {
         String query = "SELECT COUNT(*) FROM viajes WHERE id_bus = ? AND estado_viaje IN ('PROGRAMADO', 'EN_CURSO')";
-        try (java.sql.Connection connection = conexionDB.getConection(); java.sql.PreparedStatement ps = connection.prepareStatement(query)) {
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
 
             ps.setInt(1, idBus);
-            try (java.sql.ResultSet rs = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1) > 0;
                 }
@@ -272,5 +272,22 @@ public class ViajeDAO {
         } catch (SQLException e) {
             throw new BDException("Error al cancelar el viaje: " + e.getMessage(), e);
         }
+    }
+
+    public List<Viaje> listarViajesPorUsuario(int idUsuario) throws BDException {
+        List<Viaje> lista = new ArrayList<>();
+        String query = "SELECT * FROM viajes v INNER JOIN boletos b ON v.id_viaje = b.id_viaje WHERE b.id_usuario = ? ORDER BY v.fecha_hora_salida_estimada DESC";
+
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, idUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(extraerViajeDeResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new BDException("Error al listar los viajes del usuario " + e, e);
+        }
+        return lista;
     }
 }

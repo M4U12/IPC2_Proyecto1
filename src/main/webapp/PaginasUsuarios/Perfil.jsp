@@ -4,6 +4,10 @@
 <%@page import="modelos.Enums"%>
 <%@page import="java.util.List"%>
 <%@page import="java.time.format.DateTimeFormatter"%>
+<%@page import="modelos.Boleto"%>
+<%@page import="modelos.Viaje"%>
+<%@page import="modelos.Ruta"%>
+<%@page import="modelos.Sucursal"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="es">
@@ -24,6 +28,13 @@
                         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
                         Cartera cartera = (Cartera) request.getAttribute("miCartera");
                         List<ViajePrivado> listaPrivados = (List<ViajePrivado>) request.getAttribute("listaPrivadosCliente");
+
+                        //listas para regulares
+                        List<Boleto> listaBoletos = (List<Boleto>) request.getAttribute("listaBoletos");
+                        List<Viaje> listaViajesCliente = (List<Viaje>) request.getAttribute("listaViajesCliente");
+                        List<Ruta> listaRutas = (List<Ruta>) request.getAttribute("listaRutas");
+                        List<Sucursal> listaSucursales = (List<Sucursal>) request.getAttribute("listaSucursales");
+
                         DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
                         String exitoMsg = (String) request.getAttribute("mensajeExito");
@@ -93,12 +104,76 @@
                         </div>
 
                         <div class="card-body p-4 tab-content">
+
                             <!-- Pestaña 1: Viajes Regulares -->
                             <div class="tab-pane fade show active" id="tab-regulares">
+                                <% if (listaBoletos != null && !listaBoletos.isEmpty()) { %>
+                                <div class="list-group list-group-flush">
+                                    <% for (Boleto b : listaBoletos) {
+                                            Viaje vAsociado = null;
+                                            if (listaViajesCliente != null) {
+                                                for (Viaje v : listaViajesCliente) {
+                                                    if (v.getIdViaje() == b.getIdViaje()) {
+                                                        vAsociado = v;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+
+                                            if (vAsociado != null) {
+                                                String origen = "Desconocido";
+                                                String destino = "Desconocido";
+                                                if (listaRutas != null && listaSucursales != null) {
+                                                    for (Ruta r : listaRutas) {
+                                                        if (r.getIdRuta() == vAsociado.getIdRuta()) {
+                                                            for (Sucursal s : listaSucursales) {
+                                                                if (s.getIdSucursal() == r.getIdOrigen()) {
+                                                                    origen = s.getNombre();
+                                                                }
+                                                                if (s.getIdSucursal() == r.getIdDestino()) {
+                                                                    destino = s.getNombre();
+                                                                }
+                                                            }
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                    %>
+                                    <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1 fw-bold text-dark">
+                                                <i class="bi bi-geo-alt-fill text-success"></i> <%= origen%> <br>
+                                                <i class="bi bi-flag-fill text-danger"></i> <%= destino%>
+                                            </h6>
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar-event"></i> Salida: <%= vAsociado.getFechaHoraSalidaEstimada().format(formatoFecha)%>
+                                                | <i class="bi bi-heptagon"></i> Asiento: <b>#<%= b.getNumeroAsiento()%></b>
+                                            </small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="d-block fw-bold text-dark mb-1">Q.<%= String.format("%.2f", b.getPrecioPagado())%></span>
+
+                                            <% if (vAsociado.getEstadoViaje() == Enums.EstadoViaje.PROGRAMADO) { %>
+                                            <span class="badge bg-primary"><i class="bi bi-ticket-detailed"></i> Boleto Comprado</span>
+                                            <% } else if (vAsociado.getEstadoViaje() == Enums.EstadoViaje.EN_CURSO) { %>
+                                            <span class="badge bg-warning text-dark"><i class="bi bi-bus-front-fill"></i> Viaje en Curso</span>
+                                            <% } else if (vAsociado.getEstadoViaje() == Enums.EstadoViaje.FINALIZADO) { %>
+                                            <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Finalizado</span>
+                                            <% } else if (vAsociado.getEstadoViaje() == Enums.EstadoViaje.CANCELADO) { %>
+                                            <span class="badge bg-danger"><i class="bi bi-x-circle-fill"></i> Cancelado</span>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                    <%      }
+                                            } %>
+                                </div>
+                                <% } else { %>
                                 <div class="alert alert-light text-center py-5">
                                     <i class="bi bi-ticket-perforated display-4 text-muted d-block mb-3"></i>
-                                    <p class="text-muted">Aquí aparecerán los boletos que compres para las rutas regulares de la empresa.</p>
+                                    <p class="text-muted">Aún no has comprado boletos para nuestras rutas regulares.</p>
+                                    <a href="${pageContext.request.contextPath}/Viajes_Disponibles" class="btn btn-outline-primary mt-2">Ver Rutas Disponibles</a>
                                 </div>
+                                <% } %>
                             </div>
 
                             <!-- Pestaña 2: Viajes Privados (PAGADOS, EN CURSO o FINALIZADOS) -->
