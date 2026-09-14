@@ -217,7 +217,7 @@ public class ViajeDAO {
     }
 
     public boolean tieneViajesActivosPorChofer(int idChofer) throws BDException {
-        String query = "SELECT COUNT(*) FROM viajes WHERE id_chofer = ? AND estado IN ('PROGRAMADO', 'EN_CURSO')";
+        String query = "SELECT COUNT(*) FROM viajes WHERE id_chofer = ? AND estado_viaje IN ('PROGRAMADO', 'EN_CURSO')";
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, idChofer);
             try (ResultSet rs = ps.executeQuery()) {

@@ -62,24 +62,26 @@ public class GestionarPrivadosServlet extends HttpServlet {
                 LocalDateTime llegadaEst = LocalDateTime.parse(request.getParameter("fecha_llegada"));
                 vpDAO.cotizarViaje(idViaje, precio, llegadaEst);
                 sesion.setAttribute("mensajeExito", "Cotización enviada al cliente.");
-
-            }else if ("cancelar".equals(accion)) {
+            } else if ("cancelar".equals(accion)) {
                 vpDAO.cancelarViajePrivado(idViaje);
                 sesion.setAttribute("mensajeExito", "Solicitud cancelada.");
-                
             } else if ("eliminar".equals(accion)) {
                 vpDAO.eliminarViajePrivado(idViaje);
                 sesion.setAttribute("mensajeExito", "Solicitud eliminada permanentemente del sistema.");
-                
             } else if ("asignar".equals(accion)) {
                 int idBus = Integer.parseInt(request.getParameter("id_bus"));
                 int idChofer = Integer.parseInt(request.getParameter("id_chofer"));
+
                 vpDAO.asignarRecursos(idViaje, idBus, idChofer);
                 new dao.BusDAO().actualizarEstadoOperativo(idBus, Enums.EstadoOperativo.EN_RUTA);
+                new dao.ChoferDAO().actualizarEstadoOperativo(idChofer, Enums.EstadoOperativo.EN_RUTA);
                 sesion.setAttribute("mensajeExito", "Unidad y chofer asignados. Listo para salir.");
-
             } else if ("iniciar".equals(accion)) {
                 double kmSalida = Double.parseDouble(request.getParameter("kilometraje_salida"));
+                double kmActualBus = Double.parseDouble(request.getParameter("km_actual_bus"));
+                if (kmSalida < kmActualBus) {
+                    throw new Exception("Error: El kilometraje de salida (" + kmSalida + ") no puede ser menor al kilometraje actual del bus (" + kmActualBus + ").");
+                }
                 LocalDateTime salidaReal = LocalDateTime.parse(request.getParameter("fecha_hora_salida_real"));
                 vpDAO.iniciarViaje(idViaje, kmSalida, salidaReal);
                 sesion.setAttribute("mensajeExito", "Viaje privado iniciado oficialmente.");
@@ -89,13 +91,17 @@ public class GestionarPrivadosServlet extends HttpServlet {
                 double kmSalida = Double.parseDouble(request.getParameter("km_salida"));
                 double gasto = Double.parseDouble(request.getParameter("gasto_combustible"));
                 LocalDateTime llegadaReal = LocalDateTime.parse(request.getParameter("fecha_hora_llegada_real"));
+
                 if (kmLlegada < kmSalida) {
                     throw new Exception("El kilometraje final (" + kmLlegada + ") no puede ser menor al kilometraje de salida (" + kmSalida + ").");
                 }
                 vpDAO.finalizarViaje(idViaje, kmLlegada, gasto, llegadaReal);
 
                 int idBus = Integer.parseInt(request.getParameter("id_bus"));
+                int idChofer = Integer.parseInt(request.getParameter("id_chofer"));
+
                 new BusDAO().actualizarEstadoOperativoYKilometraje(idBus, Enums.EstadoOperativo.DISPONIBLE, kmLlegada);
+                new ChoferDAO().actualizarEstadoOperativo(idChofer, Enums.EstadoOperativo.DISPONIBLE);
 
                 sesion.setAttribute("mensajeExito", "Viaje privado finalizado con éxito.");
             }

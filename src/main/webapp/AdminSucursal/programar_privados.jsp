@@ -101,7 +101,6 @@
                                                 <i class="bi bi-check-circle-fill text-success fs-5"></i>
                                                 <% } %>
 
-                                                <!-- Botones para Cancelar/Eliminar (Solo si no está pagado) -->
                                                 <% if (vp.getEstado() == Enums.EstadoViaje.PENDIENTE || vp.getEstado() == Enums.EstadoViaje.COTIZADA) {%>
                                                 <form action="${pageContext.request.contextPath}/Gestionar_Privados" method="POST" class="m-0" onsubmit="return confirm('¿Cancelar esta solicitud?');">
                                                     <input type="hidden" name="accion" value="cancelar">
@@ -137,7 +136,7 @@
                                                             boolean hayBusParaCotizar = false;
                                                             if (listaBuses != null) {
                                                                 for (Bus b : listaBuses) {
-                                                                    if (b.getCapacidad() >= vp.getCantidadPasajeros() && b.getEstadoOperativo().equals(Enums.EstadoOperativo.DISPONIBLE.name())) {
+                                                                    if (b.getCapacidad() >= vp.getCantidadPasajeros() && "DISPONIBLE".equals(String.valueOf(b.getEstadoOperativo()))) {
                                                                         hayBusParaCotizar = true;
                                                                         break;
                                                                     }
@@ -189,7 +188,7 @@
                                                             boolean hayBusesAptos = false;
                                                             if (listaBuses != null) {
                                                                 for (Bus b : listaBuses) {
-                                                                    if (b.getCapacidad() >= vp.getCantidadPasajeros() && b.getEstadoOperativo().equals(Enums.EstadoOperativo.DISPONIBLE.name())) {
+                                                                    if (b.getCapacidad() >= vp.getCantidadPasajeros() && "DISPONIBLE".equals(String.valueOf(b.getEstadoOperativo()))) {
                                                                         hayBusesAptos = true;
                                                                         break;
                                                                     }
@@ -200,7 +199,7 @@
                                                         <select class="form-select" name="id_bus" required>
                                                             <option value="" selected disabled>Selecciona bus apto...</option>
                                                             <% for (Bus b : listaBuses) {
-                                                                    if (b.getCapacidad() >= vp.getCantidadPasajeros() && b.getEstadoOperativo().equals(Enums.EstadoOperativo.DISPONIBLE.name())) {%>
+                                                                    if (b.getCapacidad() >= vp.getCantidadPasajeros() && "DISPONIBLE".equals(String.valueOf(b.getEstadoOperativo()))) {%>
                                                             <option value="<%= b.getIdBus()%>">Placa: <%= b.getPlaca()%> (<%= b.getCapacidad()%> Asientos)</option>
                                                             <% }
                                                                 } %>
@@ -215,16 +214,18 @@
                                                     <div class="mb-3">
                                                         <label class="form-label fw-bold">Seleccionar Chofer</label>
                                                         <select class="form-select" name="id_chofer" required>
+                                                            <option value="" selected disabled>Selecciona el chofer...</option>
                                                             <% if (listaChoferes != null) {
-                                                                    for (Chofer c : listaChoferes) {%>
+                                                                    for (Chofer c : listaChoferes) {
+                                                                        if ("DISPONIBLE".equals(String.valueOf(c.getEstadoOperativo()))) {%>
                                                             <option value="<%= c.getIdChofer()%>"><%= c.getNombre()%></option>
-                                                            <% }
+                                                            <%      }
+                                                                    }
                                                                 } %>
                                                         </select>
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <!-- si no hay buses aptos, el botón se deshabilita para evitar errores -->
                                                     <button type="submit" class="btn btn-primary fw-bold" <% if (!hayBusesAptos) {
                                                             out.print("disabled");
                                                         } %>>Asignar y Preparar Salida</button>
@@ -237,7 +238,6 @@
 
                                 <!-- Modal Iniciar -->
                                 <% if (vp.getEstado() == Enums.EstadoViaje.PAGADA && vp.getIdBus() != null) {
-                                        // busqueda del kilometraje actual del bus asignado
                                         double kmActualBus = 0;
                                         if (listaBuses != null) {
                                             for (Bus b : listaBuses) {
@@ -259,9 +259,9 @@
                                                 <div class="modal-body">
                                                     <input type="hidden" name="accion" value="iniciar">
                                                     <input type="hidden" name="id_viaje_privado" value="<%= vp.getIdViajePrivado()%>">
+                                                    <input type="hidden" name="km_actual_bus" value="<%= kmActualBus%>">
                                                     <div class="mb-3">
                                                         <label class="form-label fw-bold">Kilometraje de Salida</label>
-                                                        <!-- Precarga el kilometraje actual y bloquea letras -->
                                                         <input type="number" step="0.1" class="form-control border-success" name="kilometraje_salida" min="<%= kmActualBus%>" value="<%= kmActualBus%>" onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode === 46" required>
                                                         <div class="form-text text-success"><i class="bi bi-info-circle"></i> Último registro en sistema: <%= kmActualBus%> km.</div>
                                                     </div>
@@ -279,7 +279,7 @@
 
                                 <!-- Modal Finalizar -->
                                 <% if (vp.getEstado() == Enums.EstadoViaje.EN_CURSO) {
-                                    double kmSeguroSalida = (vp.getKilometrajeSalida() != null) ? vp.getKilometrajeSalida() : 0.0;
+                                        double kmSeguroSalida = (vp.getKilometrajeSalida() != null) ? vp.getKilometrajeSalida() : 0.0;
                                 %>
                                 <div class="modal fade text-start" id="modalFinalizar<%= vp.getIdViajePrivado()%>" tabindex="-1">
                                     <div class="modal-dialog">
@@ -292,16 +292,18 @@
                                                 <div class="modal-body">
                                                     <input type="hidden" name="accion" value="finalizar">
                                                     <input type="hidden" name="id_viaje_privado" value="<%= vp.getIdViajePrivado()%>">
+
                                                     <input type="hidden" name="id_bus" value="<%= vp.getIdBus()%>">
-                                                    <input type="hidden" name="km_salida" value="<%= kmSeguroSalida %>">
+                                                    <input type="hidden" name="id_chofer" value="<%= vp.getIdChofer()%>">
+                                                    <input type="hidden" name="km_salida" value="<%= kmSeguroSalida%>">
 
                                                     <div class="mb-3">
                                                         <label class="form-label fw-bold">Kilometraje Final</label>
-                                                        <input type="number" step="0.1" class="form-control" name="kilometraje_llegada" min="<%= kmSeguroSalida %>" onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode === 46" required>
+                                                        <input type="number" step="0.1" min="<%= kmSeguroSalida%>" value="<%= kmSeguroSalida%>" class="form-control" name="kilometraje_llegada" required>
                                                     </div>
                                                     <div class="mb-3">
                                                         <label class="form-label fw-bold">Gasto Combustible (Q)</label>
-                                                        <input type="number" step="0.01" class="form-control" name="gasto_combustible" onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode === 46" required>
+                                                        <input type="number" step="0.01" min="0" class="form-control" name="gasto_combustible" required>
                                                     </div>
                                                     <div class="mb-3">
                                                         <label class="form-label fw-bold">Hora Real de Llegada</label>

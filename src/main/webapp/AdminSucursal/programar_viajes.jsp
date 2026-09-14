@@ -101,9 +101,11 @@
                                         <select class="form-select" name="id_bus" required>
                                             <option value="">Selecciona el bus...</option>
                                             <% if (listaBuses != null) {
-                                                    for (Bus b : listaBuses) {%>
+                                                    for (Bus b : listaBuses) {
+                                                        if ("DISPONIBLE".equals(String.valueOf(b.getEstadoOperativo()))) {%>
                                             <option value="<%= b.getIdBus()%>">Placa: <%= b.getPlaca()%> (<%= b.getCapacidad()%> Asientos)</option>
                                             <% }
+                                                    }
                                                 } %>
                                         </select>
                                     </div>
@@ -113,9 +115,11 @@
                                         <select class="form-select" name="id_chofer" required>
                                             <option value="">Selecciona el chofer...</option>
                                             <% if (listaChoferes != null) {
-                                                    for (Chofer c : listaChoferes) {%>
+                                                    for (Chofer c : listaChoferes) {
+                                                        if ("DISPONIBLE".equals(String.valueOf(c.getEstadoOperativo()))) {%>
                                             <option value="<%= c.getIdChofer()%>"><%= c.getNombre()%></option>
                                             <% }
+                                                    }
                                                 }%>
                                         </select>
                                     </div>
@@ -152,6 +156,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
+                                            <!-- Resuelve el nombre del destino cruzando los IDs: Viaje -> Ruta -> Sucursal -->
                                             <% if (listaViajes != null && !listaViajes.isEmpty()) {
                                                     for (Viaje v : listaViajes) {
                                                         String nombreDestino = "Desconocido";
@@ -203,12 +208,16 @@
                                                         <form action="${pageContext.request.contextPath}/Gestionar_Viajes" method="POST" class="m-0" onsubmit="return confirm('¿Seguro que deseas CANCELAR este viaje?');">
                                                             <input type="hidden" name="accion" value="cancelar">
                                                             <input type="hidden" name="id_viaje" value="<%= v.getIdViaje()%>">
+                                                            <input type="hidden" name="id_bus" value="<%= v.getIdBus()%>">
+                                                            <input type="hidden" name="id_chofer" value="<%= v.getIdChofer()%>">
                                                             <button type="submit" class="btn btn-sm btn-outline-warning" title="Cancelar Viaje"><i class="bi bi-x-octagon"></i></button>
                                                         </form>
 
                                                         <form action="${pageContext.request.contextPath}/Gestionar_Viajes" method="POST" class="m-0" onsubmit="return confirm('¿Eliminar viaje permanentemente?');">
                                                             <input type="hidden" name="accion" value="eliminar">
                                                             <input type="hidden" name="id_viaje" value="<%= v.getIdViaje()%>">
+                                                            <input type="hidden" name="id_bus" value="<%= v.getIdBus()%>">
+                                                            <input type="hidden" name="id_chofer" value="<%= v.getIdChofer()%>">
                                                             <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>
                                                         </form>
 
@@ -236,16 +245,18 @@
                                                         <div class="modal-body">
                                                             <input type="hidden" name="accion" value="editar">
                                                             <input type="hidden" name="id_viaje" value="<%= v.getIdViaje()%>">
+                                                            <input type="hidden" name="id_bus_antiguo" value="<%= v.getIdBus()%>">
+                                                            <input type="hidden" name="id_chofer_antiguo" value="<%= v.getIdChofer()%>">
 
                                                             <div class="mb-3">
                                                                 <label class="form-label text-muted small fw-bold">Bus Asignado</label>
                                                                 <select class="form-select" name="id_bus" required>
                                                                     <% if (listaBuses != null) {
-                                                                            for (Bus b : listaBuses) {%>
-                                                                    <option value="<%= b.getIdBus()%>" <%= b.getIdBus() == v.getIdBus() ? "selected" : ""%>>
-                                                                        Placa: <%= b.getPlaca()%> (<%= b.getCapacidad()%> Asientos)
-                                                                    </option>
+                                                                            for (Bus b : listaBuses) {
+                                                                                if ("DISPONIBLE".equals(String.valueOf(b.getEstadoOperativo())) || b.getIdBus() == v.getIdBus()) {%>
+                                                                    <option value="<%= b.getIdBus()%>" <%= b.getIdBus() == v.getIdBus() ? "selected" : ""%>>Placa: <%= b.getPlaca()%> (<%= b.getCapacidad()%> Asientos)</option>
                                                                     <% }
+                                                                            }
                                                                         } %>
                                                                 </select>
                                                             </div>
@@ -254,11 +265,11 @@
                                                                 <label class="form-label text-muted small fw-bold">Chofer Designado</label>
                                                                 <select class="form-select" name="id_chofer" required>
                                                                     <% if (listaChoferes != null) {
-                                                                            for (Chofer c : listaChoferes) {%>
-                                                                    <option value="<%= c.getIdChofer()%>" <%= c.getIdChofer() == v.getIdChofer() ? "selected" : ""%>>
-                                                                        <%= c.getNombre()%>
-                                                                    </option>
+                                                                            for (Chofer c : listaChoferes) {
+                                                                                if ("DISPONIBLE".equals(String.valueOf(c.getEstadoOperativo())) || c.getIdChofer() == v.getIdChofer()) {%>
+                                                                    <option value="<%= c.getIdChofer()%>" <%= c.getIdChofer() == v.getIdChofer() ? "selected" : ""%>><%= c.getNombre()%></option>
                                                                     <% }
+                                                                            }
                                                                         }%>
                                                                 </select>
                                                             </div>
@@ -352,7 +363,7 @@
                                                             <input type="hidden" name="accion" value="finalizar_viaje">
                                                             <input type="hidden" name="id_viaje" value="<%= v.getIdViaje()%>">
                                                             <input type="hidden" name="id_bus" value="<%= v.getIdBus()%>">
-
+                                                            <input type="hidden" name="id_chofer" value="<%= v.getIdChofer()%>">
                                                             <input type="hidden" name="km_salida" value="<%= kmSeguroSalida%>">
 
                                                             <div class="mb-3">

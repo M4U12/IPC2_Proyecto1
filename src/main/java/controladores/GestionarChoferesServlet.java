@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controladores;
 
 import dao.ChoferDAO;
@@ -22,10 +18,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
 
-/**
- *
- * @author ACER
- */
 @WebServlet(name = "GestionarChoferesServlet", urlPatterns = {"/Gestionar_Choferes"})
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 5, maxRequestSize = 1024 * 1024 * 10)
 public class GestionarChoferesServlet extends HttpServlet {
@@ -42,7 +34,6 @@ public class GestionarChoferesServlet extends HttpServlet {
 
         ChoferDAO choferDAO = new ChoferDAO();
         try {
-            // el id ya viene desde el LoginServlet
             int idMiSucursal = usuarioActivo.getIdSucursalAsignada();
             List<Chofer> listaChoferes = choferDAO.listarChoferesPorSucursal(idMiSucursal, false);
             request.setAttribute("listaChoferes", listaChoferes);
@@ -96,22 +87,33 @@ public class GestionarChoferesServlet extends HttpServlet {
                 nuevoChofer.setTelefono(telefono);
                 nuevoChofer.setSalarioBasePorViaje(Double.parseDouble(request.getParameter("salario_base")));
                 nuevoChofer.setFoto(fotoBase64);
+                nuevoChofer.setEstadoOperativo(Enums.EstadoOperativo.DISPONIBLE);
                 nuevoChofer.setEstado(true);
 
                 choferDAO.agregarChofer(nuevoChofer);
                 request.getSession().setAttribute("mensajeExito", "Chofer registrado exitosamente.");
+
             } else if ("cambiarEstado".equals(accion)) {
                 int idChofer = Integer.parseInt(request.getParameter("id_chofer"));
                 boolean nuevoEstado = Boolean.parseBoolean(request.getParameter("nuevo_estado"));
 
+                // evitar dar de baja si está en un viaje
+                if (!nuevoEstado) {
+                    choferDAO.validarChoferLibre(idChofer);
+                }
+
                 choferDAO.cambiarEstadoChofer(idChofer, nuevoEstado);
                 request.getSession().setAttribute("mensajeExito", "Estado actualizado.");
+
             } else if ("editar".equals(accion)) {
                 int idChofer = Integer.parseInt(request.getParameter("id_chofer"));
+
+                // evitar edición si está en un viaje
+                choferDAO.validarChoferLibre(idChofer);
+
                 String nombre = request.getParameter("nombre");
                 String telefono = request.getParameter("telefono");
                 String numLicencia = request.getParameter("num_licencia");
-
                 String fotoBase64 = request.getParameter("foto_actual");
 
                 String errorValidacion = validarDatosChofer(nombre, telefono, numLicencia);
@@ -124,7 +126,7 @@ public class GestionarChoferesServlet extends HttpServlet {
                 Part filePart = request.getPart("foto");
                 if (filePart != null && filePart.getSize() > 0) {
                     byte[] imageBytes = filePart.getInputStream().readAllBytes();
-                    fotoBase64 = java.util.Base64.getEncoder().encodeToString(imageBytes);
+                    fotoBase64 = Base64.getEncoder().encodeToString(imageBytes);
                 }
 
                 Chofer choferModificado = new Chofer();
@@ -142,6 +144,8 @@ public class GestionarChoferesServlet extends HttpServlet {
                 request.getSession().setAttribute("mensajeExito", "Datos del chofer actualizados.");
             }
         } catch (BDException e) {
+            request.getSession().setAttribute("error", e.getMessage());
+        } catch (Exception e) {
             request.getSession().setAttribute("error", "Error procesando la solicitud: " + e.getMessage());
         }
 

@@ -77,6 +77,12 @@ public class ViajePrivadoDAO {
 
                     Timestamp llegadaReal = rs.getTimestamp("fecha_hora_llegada_real");
                     vp.setFechaHoraLlegadaReal(llegadaReal != null ? llegadaReal.toLocalDateTime() : null);
+                    
+                    double kmSalida = rs.getDouble("kilometraje_salida");
+                    vp.setKilometrajeSalida(rs.wasNull() ? null : kmSalida);
+
+                    double kmLlegada = rs.getDouble("kilometraje_llegada");
+                    vp.setKilometrajeLlegada(rs.wasNull() ? null : kmLlegada);
 
                     lista.add(vp);
                 }

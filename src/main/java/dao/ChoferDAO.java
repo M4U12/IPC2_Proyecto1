@@ -21,22 +21,19 @@ public class ChoferDAO {
     }
 
     public boolean agregarChofer(Chofer chofer) throws BDException {
-        String query = "INSERT INTO choferes (id_sucursal, nombre, foto, num_licencia, tipo_licencia, fecha_vencimiento_licencia, telefono, salario_base_por_viaje, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
+        String query = "INSERT INTO choferes (id_sucursal, nombre, foto, num_licencia, tipo_licencia, fecha_vencimiento_licencia, telefono, salario_base_por_viaje, estado_operativo, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
-
             ps.setInt(1, chofer.getIdSucursal());
             ps.setString(2, chofer.getNombre());
             ps.setString(3, chofer.getFoto());
             ps.setString(4, chofer.getNumLicencia());
             ps.setString(5, chofer.getTipoLicencia().name());
-            ps.setDate(6, Date.valueOf(chofer.getFechaVencimientoLicencia()));
+            ps.setDate(6, java.sql.Date.valueOf(chofer.getFechaVencimientoLicencia()));
             ps.setString(7, chofer.getTelefono());
             ps.setDouble(8, chofer.getSalarioBasePorViaje());
-            ps.setBoolean(9, chofer.isEstado());
-
+            ps.setString(9, chofer.getEstadoOperativo().name());
+            ps.setBoolean(10, chofer.isEstado());
             return ps.executeUpdate() > 0;
-
         } catch (SQLException e) {
             throw new BDException("Error al registrar el chofer: " + e.getMessage(), e);
         }
@@ -44,16 +41,13 @@ public class ChoferDAO {
 
     public List<Chofer> listarChoferesPorSucursal(int idSucursal, boolean soloActivos) throws BDException {
         List<Chofer> listaChoferes = new ArrayList<>();
-        String query = "SELECT id_chofer, id_sucursal, nombre, foto, num_licencia, tipo_licencia, fecha_vencimiento_licencia, telefono, salario_base_por_viaje, estado FROM choferes WHERE id_sucursal = ?";
-
+        String query = "SELECT id_chofer, id_sucursal, nombre, foto, num_licencia, tipo_licencia, fecha_vencimiento_licencia, telefono, salario_base_por_viaje, estado_operativo, estado FROM choferes WHERE id_sucursal = ?";
         if (soloActivos) {
             query += " AND estado = TRUE";
         }
 
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
-
             ps.setInt(1, idSucursal);
-
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Chofer chofer = new Chofer(
@@ -66,6 +60,7 @@ public class ChoferDAO {
                             rs.getDate("fecha_vencimiento_licencia").toLocalDate(),
                             rs.getString("telefono"),
                             rs.getDouble("salario_base_por_viaje"),
+                            Enums.EstadoOperativo.valueOf(rs.getString("estado_operativo")),
                             rs.getBoolean("estado")
                     );
                     listaChoferes.add(chofer);
@@ -120,6 +115,17 @@ public class ChoferDAO {
 
         if (vDAO.tieneViajesActivosPorChofer(idChofer) || vpDAO.tieneViajesPrivadosActivosPorChofer(idChofer)) {
             throw new BDException("Operación denegada: El chofer está asignado a un viaje y no puede ser modificado.");
+        }
+    }
+
+    public boolean actualizarEstadoOperativo(int idChofer, Enums.EstadoOperativo estado) throws BDException {
+        String query = "UPDATE choferes SET estado_operativo = ? WHERE id_chofer = ?";
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setString(1, estado.name());
+            ps.setInt(2, idChofer);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new BDException("Error al cambiar estado operativo del chofer: " + e.getMessage(), e);
         }
     }
 }

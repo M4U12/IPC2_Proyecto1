@@ -13,11 +13,12 @@ public class Chofer {
     private String telefono;
     private double salarioBasePorViaje;
     private boolean estado;
+    private Enums.EstadoOperativo estadoOperativo;
 
     public Chofer() {
     }
 
-    public Chofer(int idChofer, int idSucursal, String nombre, String foto, String numLicencia, Enums.TipoLicencia tipoLicencia, LocalDate fechaVencimientoLicencia, String telefono, double salarioBasePorViaje, boolean estado) {
+    public Chofer(int idChofer, int idSucursal, String nombre, String foto, String numLicencia, Enums.TipoLicencia tipoLicencia, LocalDate fechaVencimientoLicencia, String telefono, double salarioBasePorViaje, Enums.EstadoOperativo estadoOperativo, boolean estado) {
         this.idChofer = idChofer;
         this.idSucursal = idSucursal;
         this.nombre = nombre;
@@ -27,6 +28,7 @@ public class Chofer {
         this.fechaVencimientoLicencia = fechaVencimientoLicencia;
         this.telefono = telefono;
         this.salarioBasePorViaje = salarioBasePorViaje;
+        this.estadoOperativo = estadoOperativo;
         this.estado = estado;
     }
 
@@ -109,4 +111,14 @@ public class Chofer {
     public void setEstado(boolean estado) {
         this.estado = estado;
     }
+
+    public Enums.EstadoOperativo getEstadoOperativo() {
+        return estadoOperativo;
+    }
+
+    public void setEstadoOperativo(Enums.EstadoOperativo estadoOperativo) {
+        this.estadoOperativo = estadoOperativo;
+    }
+    
+    
 }

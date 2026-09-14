@@ -68,12 +68,24 @@ public class GestionarViajesServlet extends HttpServlet {
                 procesarEdicion(request);
             } else if ("eliminar".equals(accion)) {
                 int idViaje = Integer.parseInt(request.getParameter("id_viaje"));
+                int idBus = Integer.parseInt(request.getParameter("id_bus"));
+                int idChofer = Integer.parseInt(request.getParameter("id_chofer"));
+
                 new ViajeDAO().eliminarViaje(idViaje);
-                request.getSession().setAttribute("mensajeExito", "Viaje eliminado permanentemente.");
+                new BusDAO().actualizarEstadoOperativo(idBus, Enums.EstadoOperativo.DISPONIBLE);
+                new ChoferDAO().actualizarEstadoOperativo(idChofer, Enums.EstadoOperativo.DISPONIBLE);
+
+                request.getSession().setAttribute("mensajeExito", "Viaje eliminado permanentemente y recursos liberados.");
             } else if ("cancelar".equals(accion)) {
                 int idViaje = Integer.parseInt(request.getParameter("id_viaje"));
+                int idBus = Integer.parseInt(request.getParameter("id_bus"));
+                int idChofer = Integer.parseInt(request.getParameter("id_chofer"));
+
                 new ViajeDAO().cancelarViaje(idViaje);
-                request.getSession().setAttribute("mensajeExito", "Viaje cancelado.");
+                new BusDAO().actualizarEstadoOperativo(idBus, Enums.EstadoOperativo.DISPONIBLE);
+                new ChoferDAO().actualizarEstadoOperativo(idChofer, Enums.EstadoOperativo.DISPONIBLE);
+
+                request.getSession().setAttribute("mensajeExito", "Viaje cancelado y recursos liberados.");
             } else if ("iniciar_viaje".equals(accion)) {
                 procesarInicio(request);
             } else if ("finalizar_viaje".equals(accion)) {
@@ -94,15 +106,21 @@ public class GestionarViajesServlet extends HttpServlet {
             throw new BDException("La fecha de llegada debe ser posterior a la salida.");
         }
 
+        int idBus = Integer.parseInt(request.getParameter("id_bus"));
+        int idChofer = Integer.parseInt(request.getParameter("id_chofer"));
+
         Viaje nuevoViaje = new Viaje();
         nuevoViaje.setEstadoViaje(Enums.EstadoViaje.PROGRAMADO);
         nuevoViaje.setIdRuta(Integer.parseInt(request.getParameter("id_ruta")));
-        nuevoViaje.setIdBus(Integer.parseInt(request.getParameter("id_bus")));
-        nuevoViaje.setIdChofer(Integer.parseInt(request.getParameter("id_chofer")));
+        nuevoViaje.setIdBus(idBus);
+        nuevoViaje.setIdChofer(idChofer);
         nuevoViaje.setFechaHoraSalidaEstimada(fechaSalida);
         nuevoViaje.setFechaHoraLlegadaEstimada(fechaLlegada);
 
         new ViajeDAO().registrarViaje(nuevoViaje);
+        new BusDAO().actualizarEstadoOperativo(idBus, Enums.EstadoOperativo.EN_RUTA);
+        new ChoferDAO().actualizarEstadoOperativo(idChofer, Enums.EstadoOperativo.EN_RUTA);
+
         request.getSession().setAttribute("mensajeExito", "Viaje programado con éxito.");
     }
 
@@ -114,15 +132,30 @@ public class GestionarViajesServlet extends HttpServlet {
             throw new BDException("La fecha de llegada debe ser posterior a la salida.");
         }
 
+        int idBusNuevo = Integer.parseInt(request.getParameter("id_bus"));
+        int idBusAntiguo = Integer.parseInt(request.getParameter("id_bus_antiguo"));
+        int idChoferNuevo = Integer.parseInt(request.getParameter("id_chofer"));
+        int idChoferAntiguo = Integer.parseInt(request.getParameter("id_chofer_antiguo"));
+
         Viaje viajeEditado = new Viaje();
         viajeEditado.setIdViaje(Integer.parseInt(request.getParameter("id_viaje")));
         viajeEditado.setIdRuta(Integer.parseInt(request.getParameter("id_ruta")));
-        viajeEditado.setIdBus(Integer.parseInt(request.getParameter("id_bus")));
-        viajeEditado.setIdChofer(Integer.parseInt(request.getParameter("id_chofer")));
+        viajeEditado.setIdBus(idBusNuevo);
+        viajeEditado.setIdChofer(idChoferNuevo);
         viajeEditado.setFechaHoraSalidaEstimada(fechaSalida);
         viajeEditado.setFechaHoraLlegadaEstimada(fechaLlegada);
 
         new ViajeDAO().actualizarViajeRegular(viajeEditado);
+
+        if (idBusNuevo != idBusAntiguo) {
+            new BusDAO().actualizarEstadoOperativo(idBusAntiguo, Enums.EstadoOperativo.DISPONIBLE);
+            new BusDAO().actualizarEstadoOperativo(idBusNuevo, Enums.EstadoOperativo.EN_RUTA);
+        }
+        if (idChoferNuevo != idChoferAntiguo) {
+            new ChoferDAO().actualizarEstadoOperativo(idChoferAntiguo, Enums.EstadoOperativo.DISPONIBLE);
+            new ChoferDAO().actualizarEstadoOperativo(idChoferNuevo, Enums.EstadoOperativo.EN_RUTA);
+        }
+
         request.getSession().setAttribute("mensajeExito", "Datos del viaje actualizados.");
     }
 
@@ -138,12 +171,20 @@ public class GestionarViajesServlet extends HttpServlet {
     private void procesarFinalizacion(HttpServletRequest request) throws Exception {
         int idViaje = Integer.parseInt(request.getParameter("id_viaje"));
         int idBus = Integer.parseInt(request.getParameter("id_bus"));
+        int idChofer = Integer.parseInt(request.getParameter("id_chofer"));
+
         double kilometrajeFinal = Double.parseDouble(request.getParameter("kilometraje_llegada"));
+        double kmSalida = Double.parseDouble(request.getParameter("km_salida"));
+        if (kilometrajeFinal < kmSalida) {
+            throw new Exception("Error: El kilometraje final (" + kilometrajeFinal + ") no puede ser menor al de salida (" + kmSalida + ").");
+        }
         double gastoCombustible = Double.parseDouble(request.getParameter("gasto_combustible"));
         LocalDateTime fechaHoraReal = LocalDateTime.parse(request.getParameter("fecha_hora_llegada_real"));
 
         new ViajeDAO().finalizarViaje(idViaje, kilometrajeFinal, gastoCombustible, fechaHoraReal);
+
         new BusDAO().actualizarEstadoOperativoYKilometraje(idBus, Enums.EstadoOperativo.DISPONIBLE, kilometrajeFinal);
+        new ChoferDAO().actualizarEstadoOperativo(idChofer, Enums.EstadoOperativo.DISPONIBLE);
 
         request.getSession().setAttribute("mensajeExito", "Llegada registrada. Viaje finalizado con éxito.");
     }
