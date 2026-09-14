@@ -7,7 +7,7 @@
 <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Mi Cartera - Code 'n Buses</title>
+        <title>Mi Cartera</title>
         <jsp:include page="/Componentes/recursos.jsp" />
     </head>
     <body class="bg-light">

@@ -7,10 +7,8 @@
 <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Solicitar Viaje Privado - Code 'n Buses</title>
+        <title>Solicitar Viaje Privado</title>
         <jsp:include page="/Componentes/recursos.jsp" />
-
-        <!-- Librerías de Leaflet -->
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     </head>

@@ -13,7 +13,7 @@
 <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Programación de Viajes - Code 'n Buses</title>
+        <title>Programación de Viajes</title>
         <jsp:include page="/Componentes/recursos.jsp" />
     </head>
     <body class="bg-light">

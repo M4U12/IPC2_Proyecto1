@@ -2,6 +2,7 @@ package controladores;
 
 import dao.BusDAO;
 import dao.ChoferDAO;
+import dao.SucursalDAO;
 import dao.ViajePrivadoDAO;
 import excepciones.BDException;
 import modelos.Usuario;
@@ -14,6 +15,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.Optional;
+import modelos.Sucursal;
 
 @WebServlet(name = "GestionarPrivadosServlet", urlPatterns = {"/Gestionar_Privados"})
 public class GestionarPrivadosServlet extends HttpServlet {
@@ -33,10 +36,16 @@ public class GestionarPrivadosServlet extends HttpServlet {
             ViajePrivadoDAO vpDAO = new ViajePrivadoDAO();
             BusDAO busDAO = new BusDAO();
             ChoferDAO choferDAO = new ChoferDAO();
+            SucursalDAO sucursalDAO = new SucursalDAO();
 
             request.setAttribute("listaPrivados", vpDAO.listarPorSucursal(miSucursal));
             request.setAttribute("listaBuses", busDAO.listarBusesPorSucursal(miSucursal, true));
             request.setAttribute("listaChoferes", choferDAO.listarChoferesPorSucursal(miSucursal, true));
+
+            Optional<Sucursal> sucursalOpt = sucursalDAO.buscarSucursalPorId(miSucursal);
+            if (sucursalOpt.isPresent()) {
+                request.setAttribute("miSucursal", sucursalOpt.get());
+            }
 
         } catch (BDException e) {
             request.setAttribute("error", "Error al cargar datos: " + e.getMessage());
@@ -49,8 +58,24 @@ public class GestionarPrivadosServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String accion = request.getParameter("accion");
         HttpSession sesion = request.getSession();
-
+        Usuario usuarioActivo = (sesion != null) ? (Usuario) sesion.getAttribute("usuarioLogueado") : null;
+        
         try {
+
+            if ("actualizar_tarifas".equals(accion)) {
+                if (usuarioActivo == null) {
+                    response.sendRedirect(request.getContextPath() + "/Login");
+                    return;
+                }
+                double tarifaBase = Double.parseDouble(request.getParameter("tarifa_base"));
+                double tarifaPasajero = Double.parseDouble(request.getParameter("tarifa_pasajero"));
+                int idMiSucursal = usuarioActivo.getIdSucursalAsignada();
+
+                new SucursalDAO().actualizarTarifas(idMiSucursal, tarifaBase, tarifaPasajero);
+                sesion.setAttribute("mensajeExito", "Tarifas de cotización actualizadas con éxito.");
+                response.sendRedirect(request.getContextPath() + "/Gestionar_Privados");
+                return;
+            }
             ViajePrivadoDAO vpDAO = new ViajePrivadoDAO();
             int idViaje = Integer.parseInt(request.getParameter("id_viaje_privado"));
 

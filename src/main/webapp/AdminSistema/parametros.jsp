@@ -3,7 +3,7 @@
 <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Parámetros - Code 'n Buses</title>
+        <title>Parámetros</title>
         <jsp:include page="/Componentes/recursos.jsp" />
     </head>
     <body>

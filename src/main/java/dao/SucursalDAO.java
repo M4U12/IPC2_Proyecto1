@@ -20,7 +20,7 @@ public class SucursalDAO {
     }
 
     public boolean agregarSucursal(Sucursal sucursal, int idAdmin) throws BDException {
-        String querySucursal = "INSERT INTO sucursales (nombre, direccion, telefono) VALUES (?, ?, ?)";
+        String querySucursal = "INSERT INTO sucursales (nombre, direccion, telefono, latitud, longitud) VALUES (?, ?, ?, ?, ?)";
         String queryAdmin = "INSERT INTO admin_sucursal (id_usuario, id_sucursal) VALUES (?, ?)";
         Connection connection = null;
 
@@ -33,6 +33,8 @@ public class SucursalDAO {
                 psSucursal.setString(1, sucursal.getNombre());
                 psSucursal.setString(2, sucursal.getDireccion());
                 psSucursal.setString(3, sucursal.getTelefono());
+                psSucursal.setDouble(4, sucursal.getLatitud());
+                psSucursal.setDouble(5, sucursal.getLongitud());
                 psSucursal.executeUpdate();
 
                 try (ResultSet rs = psSucursal.getGeneratedKeys()) {
@@ -47,20 +49,19 @@ public class SucursalDAO {
                 return false;
             }
 
- 
             try (PreparedStatement psAdmin = connection.prepareStatement(queryAdmin)) {
                 psAdmin.setInt(1, idAdmin);
                 psAdmin.setInt(2, idSucursalGenerado);
                 psAdmin.executeUpdate();
             }
 
-            connection.commit(); 
+            connection.commit();
             return true;
 
         } catch (SQLException e) {
             if (connection != null) {
                 try {
-                    connection.rollback(); 
+                    connection.rollback();
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
@@ -70,7 +71,7 @@ public class SucursalDAO {
             if (connection != null) {
                 try {
                     connection.setAutoCommit(true);
-                    connection.close(); 
+                    connection.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -80,7 +81,7 @@ public class SucursalDAO {
 
     public List<Sucursal> listarSucursales() throws BDException {
         List<Sucursal> listaSucursales = new ArrayList<>();
-        String query = "SELECT id_sucursal, nombre, direccion, telefono FROM sucursales";
+        String query = "SELECT id_sucursal, nombre, direccion, telefono, latitud, longitud, tarifa_base_hora, tarifa_pasajero FROM sucursales";
 
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
 
@@ -89,7 +90,9 @@ public class SucursalDAO {
                         rs.getInt("id_sucursal"),
                         rs.getString("nombre"),
                         rs.getString("direccion"),
-                        rs.getString("telefono")
+                        rs.getString("telefono"),
+                        rs.getDouble("latitud"),
+                        rs.getDouble("longitud")
                 );
                 listaSucursales.add(sucursal);
             }
@@ -102,14 +105,16 @@ public class SucursalDAO {
     }
 
     public boolean actualizarSucursal(Sucursal sucursal) throws BDException {
-        String query = "UPDATE sucursales SET nombre = ?, direccion = ?, telefono = ? WHERE id_sucursal = ?";
+        String query = "UPDATE sucursales SET nombre = ?, direccion = ?, telefono = ?, latitud = ?, longitud = ? WHERE id_sucursal = ?";
 
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
 
             ps.setString(1, sucursal.getNombre());
             ps.setString(2, sucursal.getDireccion());
             ps.setString(3, sucursal.getTelefono());
-            ps.setInt(4, sucursal.getIdSucursal());
+            ps.setDouble(4, sucursal.getLatitud());
+            ps.setDouble(5, sucursal.getLongitud());
+            ps.setInt(6, sucursal.getIdSucursal());
 
             return ps.executeUpdate() > 0;
 
@@ -120,7 +125,7 @@ public class SucursalDAO {
 
     public Optional<Sucursal> buscarSucursalPorId(int idSucursal) throws BDException {
         Sucursal sucursal = null;
-        String query = "SELECT id_sucursal, nombre, direccion, telefono FROM sucursales WHERE id_sucursal = ?";
+        String query = "SELECT id_sucursal, nombre, direccion, telefono, latitud, longitud, tarifa_base_hora, tarifa_pasajero FROM sucursales WHERE id_sucursal = ?";
 
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
 
@@ -132,8 +137,12 @@ public class SucursalDAO {
                             rs.getInt("id_sucursal"),
                             rs.getString("nombre"),
                             rs.getString("direccion"),
-                            rs.getString("telefono")
+                            rs.getString("telefono"),
+                            rs.getDouble("latitud"),
+                            rs.getDouble("longitud")
                     );
+                    sucursal.setTarifaBaseHora(rs.getDouble("tarifa_base_hora"));
+                    sucursal.setTarifaPasajero(rs.getDouble("tarifa_pasajero"));
                 }
             }
         } catch (SQLException e) {
@@ -152,6 +161,18 @@ public class SucursalDAO {
             }
         } catch (SQLException e) {
             throw new BDException("Error al verificar el teléfono de la sucursal: " + e.getMessage(), e);
+        }
+    }
+
+    public boolean actualizarTarifas(int idSucursal, double tarifaBase, double tarifaPasajero) throws BDException {
+        String query = "UPDATE sucursales SET tarifa_base_hora = ?, tarifa_pasajero = ? WHERE id_sucursal = ?";
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setDouble(1, tarifaBase);
+            ps.setDouble(2, tarifaPasajero);
+            ps.setInt(3, idSucursal);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new BDException("Error al actualizar tarifas: " + e.getMessage(), e);
         }
     }
 }

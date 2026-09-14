@@ -38,7 +38,7 @@ public class PerfilClienteServlet extends HttpServlet {
             }
             request.setAttribute("listaPrivadosCliente", new ViajePrivadoDAO().listarPorCliente(usuarioActivo.getIdUsuario()));
 
-            // --- NUEVAS CARGAS PARA LA PESTAÑA REGULARES ---
+            // --- para los regulares ---
             request.setAttribute("listaBoletos", new dao.BoletoDAO().listarTodosBoletosPorCliente(usuarioActivo.getIdUsuario()));
             request.setAttribute("listaViajesCliente", new dao.ViajeDAO().listarViajesPorUsuario(usuarioActivo.getIdUsuario()));
             request.setAttribute("listaRutas", new dao.RutaDAO().listarTodasLasRutas());

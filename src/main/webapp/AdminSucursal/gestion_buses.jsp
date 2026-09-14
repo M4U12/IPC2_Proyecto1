@@ -7,7 +7,7 @@
 <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Gestión de Flota - Code 'n Buses</title>
+        <title>Gestión de Flota</title>
         <jsp:include page="/Componentes/recursos.jsp" />
     </head>
     <body>

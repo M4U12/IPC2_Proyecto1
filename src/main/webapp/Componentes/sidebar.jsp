@@ -28,7 +28,7 @@
             <a href="${pageContext.request.contextPath}/Gestionar_Admin_Sucursal">Administrar Personal</a>
             <a href="${pageContext.request.contextPath}/Parametros">Parámetros</a>
             <a href="${pageContext.request.contextPath}/AdminSistema/reportes_globales.jsp">Reportes Globales</a>
-            <a href="${pageContext.request.contextPath}/AdminSistema/mapa_rutas.jsp">Mapa de Rutas</a>
+            <a href="${pageContext.request.contextPath}/Mapa_Rutas">Mapa de Rutas</a>
         <% } %>
 
         <% if (usuario.getRol() == Enums.RolUsuario.ADMINISTRADOR_SUCURSAL) { %>

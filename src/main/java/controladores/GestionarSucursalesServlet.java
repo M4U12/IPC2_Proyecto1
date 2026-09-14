@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controladores;
 
 import dao.AdminSucursalDAO;
@@ -19,10 +15,6 @@ import modelos.Usuario;
 import jakarta.servlet.http.HttpSession;
 import modelos.Enums;
 
-/**
- *
- * @author ACER
- */
 @WebServlet(name = "GestionarSucursalesServlet", urlPatterns = {"/Gestionar_Sucursales"})
 public class GestionarSucursalesServlet extends HttpServlet {
 
@@ -70,11 +62,15 @@ public class GestionarSucursalesServlet extends HttpServlet {
 
         response.sendRedirect(request.getContextPath() + "/Gestionar_Sucursales");
     }
+
     private void procesarCreacion(HttpServletRequest request) throws BDException {
         String nombre = request.getParameter("nombre");
         String telefono = request.getParameter("telefono");
         String direccion = request.getParameter("direccion");
         int idAdmin = Integer.parseInt(request.getParameter("id_admin"));
+
+        double latitud = Double.parseDouble(request.getParameter("latitud"));
+        double longitud = Double.parseDouble(request.getParameter("longitud"));
 
         if (telefono == null || !telefono.matches("\\d{8}")) {
             request.getSession().setAttribute("error", "El teléfono debe contener exactamente 8 números.");
@@ -88,7 +84,22 @@ public class GestionarSucursalesServlet extends HttpServlet {
             return;
         }
 
-        Sucursal nuevaSucursal = new Sucursal(0, nombre, direccion, telefono);
+        AdminSucursalDAO adminDAO = new AdminSucursalDAO();
+        boolean adminSigueValido = false;
+
+        for (Usuario admin : adminDAO.listarAdminsDisponibles()) {
+            if (admin.getIdUsuario() == idAdmin) {
+                adminSigueValido = true;
+                break;
+            }
+        }
+
+        if (!adminSigueValido) {
+            request.getSession().setAttribute("error", "Operación denegada: El administrador seleccionado fue desactivado o ya se le asignó otra sucursal en otra pestaña.");
+            return;
+        }
+
+        Sucursal nuevaSucursal = new Sucursal(0, nombre, direccion, telefono, latitud, longitud);
         boolean exito = sucursalDAO.agregarSucursal(nuevaSucursal, idAdmin);
 
         if (exito) {
@@ -105,6 +116,9 @@ public class GestionarSucursalesServlet extends HttpServlet {
         String direccion = request.getParameter("direccion");
         String telefonoActual = request.getParameter("telefono_actual");
 
+        double latitud = Double.parseDouble(request.getParameter("latitud"));
+        double longitud = Double.parseDouble(request.getParameter("longitud"));
+
         if (telefono == null || !telefono.matches("\\d{8}")) {
             request.getSession().setAttribute("error", "El teléfono debe contener exactamente 8 números.");
             return;
@@ -117,7 +131,7 @@ public class GestionarSucursalesServlet extends HttpServlet {
             return;
         }
 
-        Sucursal sucursalModificada = new Sucursal(idSucursal, nombre, direccion, telefono);
+        Sucursal sucursalModificada = new Sucursal(idSucursal, nombre, direccion, telefono, latitud, longitud);
         sucursalDAO.actualizarSucursal(sucursalModificada);
         request.getSession().setAttribute("mensajeExito", "Datos de la sucursal actualizados exitosamente.");
     }

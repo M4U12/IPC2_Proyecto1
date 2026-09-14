@@ -7,7 +7,7 @@
 <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Comprar Boleto - Code 'n Buses</title>
+        <title>Comprar Boleto</title>
         <jsp:include page="/Componentes/recursos.jsp" />
     </head>
     <body class="bg-light">

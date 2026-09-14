@@ -5,12 +5,13 @@
 <%@page import="modelos.Bus"%>
 <%@page import="modelos.Chofer"%>
 <%@page import="modelos.Enums"%>
+<%@page import="modelos.Sucursal"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Gestión de Privados - Code 'n Buses</title>
+        <title>Gestión de Privados</title>
         <jsp:include page="/Componentes/recursos.jsp" />
     </head>
     <body class="bg-light">
@@ -25,6 +26,9 @@
                         List<ViajePrivado> listaPrivados = (List<ViajePrivado>) request.getAttribute("listaPrivados");
                         List<Bus> listaBuses = (List<Bus>) request.getAttribute("listaBuses");
                         List<Chofer> listaChoferes = (List<Chofer>) request.getAttribute("listaChoferes");
+
+                        // Extraemos la sucursal asignada para leer sus tarifas
+                        Sucursal miSucursal = (Sucursal) request.getAttribute("miSucursal");
 
                         DateTimeFormatter formatoTabla = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm");
                         DateTimeFormatter formatoInput = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
@@ -41,7 +45,41 @@
                         <% if (exitoMsg != null) {%><div class="alert alert-success mt-3 mb-0"><%= exitoMsg%></div><% session.removeAttribute("mensajeExito");
                             } %>
                         <% if (errorMsg != null) {%><div class="alert alert-danger mt-3 mb-0"><%= errorMsg%></div><% session.removeAttribute("error");
-                            } %>
+                            }%>
+                    </div>
+
+                    <!-- Panel de Modificación de Tarifas de la Sucursal -->
+                    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+                        <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                            <div>
+                                <h5 class="fw-bold text-primary mb-1"><i class="bi bi-sliders me-2"></i>Parámetros de Cotización</h5>
+                                <p class="text-muted small mb-0">Define los precios base por hora y por pasajero que utiliza el sistema para calcular el costo estimado.</p>
+                            </div>
+
+                            <form action="${pageContext.request.contextPath}/Gestionar_Privados" method="POST" class="d-flex gap-3 align-items-end">
+                                <input type="hidden" name="accion" value="actualizar_tarifas">
+
+                                <div>
+                                    <label class="form-label fw-bold small text-muted mb-1">Tarifa Base por Hora</label>
+                                    <div class="input-group input-group-sm" style="width: 170px;">
+                                        <span class="input-group-text bg-light fw-bold text-dark">Q.</span>
+                                        <input type="number" step="0.01" min="0" class="form-control fw-bold" name="tarifa_base" value="<%= miSucursal != null ? miSucursal.getTarifaBaseHora() : 0.0%>" required>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="form-label fw-bold small text-muted mb-1">Tarifa por Pasajero</label>
+                                    <div class="input-group input-group-sm" style="width: 170px;">
+                                        <span class="input-group-text bg-light fw-bold text-dark">Q.</span>
+                                        <input type="number" step="0.01" min="0" class="form-control fw-bold" name="tarifa_pasajero" value="<%= miSucursal != null ? miSucursal.getTarifaPasajero() : 0.0%>" required>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-sm fw-bold px-3 py-2">
+                                    <i class="bi bi-save me-1"></i> Guardar Tarifas
+                                </button>
+                            </form>
+                        </div>
                     </div>
 
                     <div class="card border-0 shadow-sm rounded-4 p-4">
@@ -150,13 +188,25 @@
                                                     </div>
 
                                                     <div class="mb-3">
-                                                        <label class="form-label fw-bold">Precio Total a Cobrar (Q)</label>
-                                                        <input type="number" step="0.01" min="0" class="form-control" name="precio" onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode === 46" required>
-                                                    </div>
-                                                    <div class="mb-3">
                                                         <label class="form-label fw-bold">Fecha/Hora Llegada Estimada (Destino)</label>
-                                                        <input type="datetime-local" class="form-control" name="fecha_llegada" min="<%= vp.getFechaHoraSalidaEstimada().format(formatoInput)%>" required>
+                                                        <input type="datetime-local" class="form-control" name="fecha_llegada" 
+                                                               id="llegada_<%= vp.getIdViajePrivado()%>" 
+                                                               min="<%= vp.getFechaHoraSalidaEstimada().format(formatoInput)%>" 
+                                                               onchange="calcularCotizacionEnVivo(<%= vp.getIdViajePrivado()%>, '<%= vp.getFechaHoraSalidaEstimada().format(formatoInput)%>', <%= vp.getCantidadPasajeros()%>, <%= miSucursal != null ? miSucursal.getTarifaBaseHora() : 0%>, <%= miSucursal != null ? miSucursal.getTarifaPasajero() : 0%>)" 
+                                                               required>
                                                     </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-bold">Precio Total a Cobrar (Q)</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text fw-bold">Q.</span>
+                                                            <input type="number" step="0.01" min="0" class="form-control fw-bold" name="precio" 
+                                                                   id="precio_<%= vp.getIdViajePrivado()%>" 
+                                                                   onkeypress="soloDecimales(event)" required>
+                                                        </div>
+                                                        <small class="text-muted"><i class="bi bi-magic"></i> El precio se calculará automáticamente al elegir la hora de llegada.</small>
+                                                    </div>
+
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="submit" class="btn btn-dark fw-bold" <% if (!hayBusParaCotizar) {
@@ -262,7 +312,7 @@
                                                     <input type="hidden" name="km_actual_bus" value="<%= kmActualBus%>">
                                                     <div class="mb-3">
                                                         <label class="form-label fw-bold">Kilometraje de Salida</label>
-                                                        <input type="number" step="0.1" class="form-control border-success" name="kilometraje_salida" min="<%= kmActualBus%>" value="<%= kmActualBus%>" onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode === 46" required>
+                                                        <input type="number" step="0.1" class="form-control border-success" name="kilometraje_salida" min="<%= kmActualBus%>" value="<%= kmActualBus%>" onkeypress="soloDecimales(event)" required>
                                                         <div class="form-text text-success"><i class="bi bi-info-circle"></i> Último registro en sistema: <%= kmActualBus%> km.</div>
                                                     </div>
                                                     <div class="mb-3">

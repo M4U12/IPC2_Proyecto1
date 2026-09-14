@@ -19,7 +19,11 @@ CREATE TABLE Sucursales (
     id_sucursal INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     direccion VARCHAR(200) NOT NULL,
-    telefono VARCHAR(15) NOT NULL UNIQUE
+    telefono VARCHAR(15) NOT NULL UNIQUE,
+    latitud DOUBLE DEFAULT 14.83472,
+    longitud DOULE DEFAULT -91.51805,
+    tarifa_base_hora DECIMAL (10,2) NOT NULL DEFAULT 75.00,
+    tarifa_pasajero DECIMAL (10,2) NOT NULL DEFAULT 20.00
 );
 
 
@@ -73,7 +77,7 @@ CREATE TABLE Buses (
 
 CREATE TABLE Mantenimiento (
     id_mantenimiento INT AUTO_INCREMENT PRIMARY KEY,
-    bus_id INT NOT NULL,
+    id_bus INT NOT NULL,
     fecha_mantenimiento DATE NOT NULL,
     monto_mano_obra DECIMAL(10,2) NOT NULL,
     monto_repuestos DECIMAL(10,2) NOT NULL,

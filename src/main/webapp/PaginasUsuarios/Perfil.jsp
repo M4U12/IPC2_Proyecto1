@@ -13,7 +13,7 @@
 <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Mi Perfil - Code 'n Buses</title>
+        <title>Mi Perfil</title>
         <jsp:include page="/Componentes/recursos.jsp" />
     </head>
     <body class="bg-light">

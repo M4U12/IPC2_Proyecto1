@@ -8,7 +8,7 @@
 <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Viajes Disponibles - Code 'n Buses</title>
+        <title>Viajes Disponibles</title>
         <jsp:include page="/Componentes/recursos.jsp" />
     </head>
     <body class="bg-light">
