@@ -137,7 +137,7 @@ public class BusDAO {
         }
     }
 
-    public boolean actualizarEstadoOperativoYKilometraje(int idBus, Enums.EstadoOperativo estado, double nuevoKilometraje) throws BDException {
+    public boolean actualizarEstadoOperativoYKilometraje(int idBus, Enums.EstadoOperativo estado, double nuevoKilometraje, Connection conn) throws BDException {
         String query = "UPDATE buses SET estado_operativo = ?, kilometraje_actual = ? WHERE id_bus = ?";
 
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
@@ -165,8 +165,8 @@ public class BusDAO {
     }
 
     public void validarBusLibre(int idBus) throws BDException {
-        dao.ViajeDAO vDAO = new dao.ViajeDAO();
-        dao.ViajePrivadoDAO vpDAO = new dao.ViajePrivadoDAO();
+        ViajeDAO vDAO = new ViajeDAO();
+        ViajePrivadoDAO vpDAO = new ViajePrivadoDAO();
 
         if (vDAO.tieneViajesActivosPorBus(idBus) || vpDAO.tieneViajesPrivadosActivosPorBus(idBus)) {
             throw new BDException("Operación denegada: El bus está asignado a un viaje programado o en curso.");
@@ -197,5 +197,43 @@ public class BusDAO {
             throw new BDException("Error al obtener el bus: " + e.getMessage(), e);
         }
         return Optional.empty();
+    }
+
+    public boolean modificacionChofer(Integer idChofer, int idBus) throws BDException {
+        String query = "UPDATE buses SET id_chofer = ? WHERE id_bus = ?";
+
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+            if (idChofer != null) {
+                ps.setInt(1, idChofer);
+            } else {
+                ps.setNull(1, Types.INTEGER);
+            }
+            ps.setInt(2, idBus);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new BDException("Error al cambiar estado del bus: " + e.getMessage(), e);
+        }
+    }
+    
+    public boolean modificacionChoferTrans(Integer idChofer, int idBus, Connection conn) throws SQLException {
+        String query = "UPDATE buses SET id_chofer = ? WHERE id_bus = ?";
+        try (PreparedStatement ps = conn.prepareStatement(query)) { 
+            if (idChofer != null) {
+                ps.setInt(1, idChofer);
+            } else {
+                ps.setNull(1, Types.INTEGER);
+            }
+            ps.setInt(2, idBus);
+            return ps.executeUpdate() > 0;
+        }
+    }
+    
+    public boolean actualizarEstadoOperativoTrans(int idBus, Enums.EstadoOperativo estado, Connection conn) throws SQLException {
+        String query = "UPDATE buses SET estado_operativo = ? WHERE id_bus = ?";
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, estado.name());
+            ps.setInt(2, idBus);
+            return ps.executeUpdate() > 0;
+        }
     }
 }

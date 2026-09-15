@@ -53,6 +53,7 @@ CREATE TABLE Choferes (
     telefono VARCHAR(15) NOT NULL UNIQUE,
     salario_base_por_viaje DECIMAL(10,2) NOT NULL,
     estado BOOLEAN DEFAULT TRUE,
+    estado_operativo ENUM('DISPONIBLE', 'EN_RUTA', 'DESCANSO') NOT NULL,
     FOREIGN KEY (id_sucursal) REFERENCES Sucursales(id_sucursal)
 );
 
@@ -82,7 +83,7 @@ CREATE TABLE Mantenimiento (
     monto_mano_obra DECIMAL(10,2) NOT NULL,
     monto_repuestos DECIMAL(10,2) NOT NULL,
     descripcion VARCHAR(260),
-    FOREIGN KEY (bus_id) REFERENCES Buses(id_bus)
+    FOREIGN KEY (id_bus) REFERENCES Buses(id_bus)
 );
 
 

@@ -1,8 +1,6 @@
 <%@page import="java.time.format.DateTimeFormatter"%>
 <%@page import="java.util.List"%>
-<%@page import="modelos.Viaje"%>
-<%@page import="modelos.Ruta"%>
-<%@page import="modelos.Sucursal"%>
+<%@page import="modelos.ViajeDisponibleDetalle"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="es">
@@ -29,34 +27,12 @@
 
                     <div class="row g-4">
                         <%
-                            List<Viaje> listaViajes = (List<Viaje>) request.getAttribute("listaViajes");
-                            List<Ruta> listaRutas = (List<Ruta>) request.getAttribute("listaRutas");
-                            List<Sucursal> listaSucursales = (List<Sucursal>) request.getAttribute("listaSucursales");
+                            List<ViajeDisponibleDetalle> listaViajes = (List<ViajeDisponibleDetalle>) request.getAttribute("listaViajes");
                             DateTimeFormatter formatoHora = DateTimeFormatter.ofPattern("hh:mm a");
                             DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd MMM, yyyy");
 
                             if (listaViajes != null && !listaViajes.isEmpty()) {
-                                for (Viaje v : listaViajes) {
-                                    String nombreOrigen = "Origen";
-                                    String nombreDestino = "Destino";
-                                    double precioRuta = 0.0;
-
-                                    if (listaRutas != null && listaSucursales != null) {
-                                        for (Ruta r : listaRutas) {
-                                            if (r.getIdRuta() == v.getIdRuta()) {
-                                                precioRuta = r.getPrecio();
-                                                for (Sucursal s : listaSucursales) {
-                                                    if (s.getIdSucursal() == r.getIdOrigen()) {
-                                                        nombreOrigen = s.getNombre();
-                                                    }
-                                                    if (s.getIdSucursal() == r.getIdDestino()) {
-                                                        nombreDestino = s.getNombre();
-                                                    }
-                                                }
-                                                break;
-                                            }
-                                        }
-                                    }
+                                for (ViajeDisponibleDetalle v : listaViajes) {
                         %>
 
                         <!-- Tarjeta de Viaje -->
@@ -74,12 +50,12 @@
                                     <div class="d-flex align-items-center mb-3">
                                         <div class="text-center w-100">
                                             <div class="text-muted small fw-bold text-uppercase">Sale de</div>
-                                            <div class="fw-bold fs-5 text-dark"><%= nombreOrigen%></div>
+                                            <div class="fw-bold fs-5 text-dark"><%= v.getOrigen()%></div>
                                         </div>
                                         <div class="px-2 text-primary fs-3"><i class="bi bi-arrow-right"></i></div>
                                         <div class="text-center w-100">
                                             <div class="text-muted small fw-bold text-uppercase">Llega a</div>
-                                            <div class="fw-bold fs-5 text-dark"><%= nombreDestino%></div>
+                                            <div class="fw-bold fs-5 text-dark"><%= v.getDestino()%></div>
                                         </div>
                                     </div>
 
@@ -88,7 +64,7 @@
                                     <div class="d-flex justify-content-between align-items-center mt-4">
                                         <div>
                                             <small class="text-muted d-block fw-bold">Tarifa por persona</small>
-                                            <span class="price-tag">Q.<%= precioRuta%></span>
+                                            <span class="price-tag fw-bold fs-5 text-success">Q.<%= String.format(java.util.Locale.US, "%.2f", v.getPrecio())%></span>
                                         </div>
 
                                         <form action="${pageContext.request.contextPath}/Comprar_Boleto" method="GET" class="m-0">

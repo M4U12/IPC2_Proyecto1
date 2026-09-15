@@ -66,26 +66,14 @@ public class GestionarViajesServlet extends HttpServlet {
                 procesarProgramacion(request);
             } else if ("editar".equals(accion)) {
                 procesarEdicion(request);
-            } else if ("eliminar".equals(accion)) {
+            } else if ("eliminar".equals(accion) || "cancelar".equals(accion)) {
                 int idViaje = Integer.parseInt(request.getParameter("id_viaje"));
                 int idBus = Integer.parseInt(request.getParameter("id_bus"));
                 int idChofer = Integer.parseInt(request.getParameter("id_chofer"));
 
-                new ViajeDAO().eliminarViaje(idViaje);
-                new BusDAO().actualizarEstadoOperativo(idBus, Enums.EstadoOperativo.DISPONIBLE);
-                new ChoferDAO().actualizarEstadoOperativo(idChofer, Enums.EstadoOperativo.DISPONIBLE);
+                new ViajeDAO().procesarLiberacionDeRecursos(idViaje, idBus, idChofer, accion);
 
-                request.getSession().setAttribute("mensajeExito", "Viaje eliminado permanentemente y recursos liberados.");
-            } else if ("cancelar".equals(accion)) {
-                int idViaje = Integer.parseInt(request.getParameter("id_viaje"));
-                int idBus = Integer.parseInt(request.getParameter("id_bus"));
-                int idChofer = Integer.parseInt(request.getParameter("id_chofer"));
-
-                new ViajeDAO().cancelarViaje(idViaje);
-                new BusDAO().actualizarEstadoOperativo(idBus, Enums.EstadoOperativo.DISPONIBLE);
-                new ChoferDAO().actualizarEstadoOperativo(idChofer, Enums.EstadoOperativo.DISPONIBLE);
-
-                request.getSession().setAttribute("mensajeExito", "Viaje cancelado y recursos liberados.");
+                request.getSession().setAttribute("mensajeExito", "Acción procesada y recursos liberados de forma segura.");
             } else if ("iniciar_viaje".equals(accion)) {
                 procesarInicio(request);
             } else if ("finalizar_viaje".equals(accion)) {
@@ -117,9 +105,7 @@ public class GestionarViajesServlet extends HttpServlet {
         nuevoViaje.setFechaHoraSalidaEstimada(fechaSalida);
         nuevoViaje.setFechaHoraLlegadaEstimada(fechaLlegada);
 
-        new ViajeDAO().registrarViaje(nuevoViaje);
-        new BusDAO().actualizarEstadoOperativo(idBus, Enums.EstadoOperativo.EN_RUTA);
-        new ChoferDAO().actualizarEstadoOperativo(idChofer, Enums.EstadoOperativo.EN_RUTA);
+        new ViajeDAO().procesarProgramacionCompleta(nuevoViaje, idBus, idChofer);
 
         request.getSession().setAttribute("mensajeExito", "Viaje programado con éxito.");
     }
@@ -145,18 +131,9 @@ public class GestionarViajesServlet extends HttpServlet {
         viajeEditado.setFechaHoraSalidaEstimada(fechaSalida);
         viajeEditado.setFechaHoraLlegadaEstimada(fechaLlegada);
 
-        new ViajeDAO().actualizarViajeRegular(viajeEditado);
+        new ViajeDAO().procesarEdicionCompleta(viajeEditado, idBusAntiguo, idChoferAntiguo);
 
-        if (idBusNuevo != idBusAntiguo) {
-            new BusDAO().actualizarEstadoOperativo(idBusAntiguo, Enums.EstadoOperativo.DISPONIBLE);
-            new BusDAO().actualizarEstadoOperativo(idBusNuevo, Enums.EstadoOperativo.EN_RUTA);
-        }
-        if (idChoferNuevo != idChoferAntiguo) {
-            new ChoferDAO().actualizarEstadoOperativo(idChoferAntiguo, Enums.EstadoOperativo.DISPONIBLE);
-            new ChoferDAO().actualizarEstadoOperativo(idChoferNuevo, Enums.EstadoOperativo.EN_RUTA);
-        }
-
-        request.getSession().setAttribute("mensajeExito", "Datos del viaje actualizados.");
+        request.getSession().setAttribute("mensajeExito", "Datos del viaje actualizados correctamente.");
     }
 
     private void procesarInicio(HttpServletRequest request) throws BDException {
@@ -181,10 +158,7 @@ public class GestionarViajesServlet extends HttpServlet {
         double gastoCombustible = Double.parseDouble(request.getParameter("gasto_combustible"));
         LocalDateTime fechaHoraReal = LocalDateTime.parse(request.getParameter("fecha_hora_llegada_real"));
 
-        new ViajeDAO().finalizarViaje(idViaje, kilometrajeFinal, gastoCombustible, fechaHoraReal);
-
-        new BusDAO().actualizarEstadoOperativoYKilometraje(idBus, Enums.EstadoOperativo.DISPONIBLE, kilometrajeFinal);
-        new ChoferDAO().actualizarEstadoOperativo(idChofer, Enums.EstadoOperativo.DISPONIBLE);
+        new ViajeDAO().procesarFinalizacionCompleta(idViaje, idBus, idChofer, kilometrajeFinal, gastoCombustible, fechaHoraReal);
 
         request.getSession().setAttribute("mensajeExito", "Llegada registrada. Viaje finalizado con éxito.");
     }

@@ -27,7 +27,7 @@
                         List<Bus> listaBuses = (List<Bus>) request.getAttribute("listaBuses");
                         List<Chofer> listaChoferes = (List<Chofer>) request.getAttribute("listaChoferes");
 
-                        // Extraemos la sucursal asignada para leer sus tarifas
+                        // se extrae la sucursal asignada para leer sus tarifas
                         Sucursal miSucursal = (Sucursal) request.getAttribute("miSucursal");
 
                         DateTimeFormatter formatoTabla = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm");

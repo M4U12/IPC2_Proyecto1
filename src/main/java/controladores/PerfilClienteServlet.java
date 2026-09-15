@@ -1,5 +1,6 @@
 package controladores;
 
+import dao.BoletoDAO;
 import dao.CarteraDAO;
 import dao.UsuarioDAO;
 import dao.ViajePrivadoDAO;
@@ -12,9 +13,12 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import modelos.Cartera;
 import modelos.Enums;
+import modelos.ViajePrivado;
 
 @WebServlet(name = "PerfilClienteServlet", urlPatterns = {"/Mi_Perfil"})
 public class PerfilClienteServlet extends HttpServlet {
@@ -30,19 +34,30 @@ public class PerfilClienteServlet extends HttpServlet {
         }
 
         try {
-            // Datos de Cartera y Privados
+            // cartera
             CarteraDAO carteraDAO = new CarteraDAO();
             Optional<Cartera> optCartera = carteraDAO.obtenerCarteraPorUsuario(usuarioActivo.getIdUsuario());
             if (optCartera.isPresent()) {
                 request.setAttribute("miCartera", optCartera.get());
             }
-            request.setAttribute("listaPrivadosCliente", new ViajePrivadoDAO().listarPorCliente(usuarioActivo.getIdUsuario()));
 
-            // --- para los regulares ---
-            request.setAttribute("listaBoletos", new dao.BoletoDAO().listarTodosBoletosPorCliente(usuarioActivo.getIdUsuario()));
-            request.setAttribute("listaViajesCliente", new dao.ViajeDAO().listarViajesPorUsuario(usuarioActivo.getIdUsuario()));
-            request.setAttribute("listaRutas", new dao.RutaDAO().listarTodasLasRutas());
-            request.setAttribute("listaSucursales", new dao.SucursalDAO().listarSucursales());
+            // viajes privados
+            List<ViajePrivado> todosPrivados = new ViajePrivadoDAO().listarPorCliente(usuarioActivo.getIdUsuario());
+            List<ViajePrivado> privadosActivos = new ArrayList<>();
+            List<ViajePrivado> cotizaciones = new ArrayList<>();
+
+            for (modelos.ViajePrivado vp : todosPrivados) {
+                if (vp.getEstado() == Enums.EstadoViaje.PENDIENTE || vp.getEstado() == Enums.EstadoViaje.COTIZADA) {
+                    cotizaciones.add(vp);
+                } else {
+                    privadosActivos.add(vp);
+                }
+            }
+            request.setAttribute("privadosActivos", privadosActivos);
+            request.setAttribute("cotizaciones", cotizaciones);
+
+            // historial regular
+            request.setAttribute("listaBoletosDetalle", new BoletoDAO().listarDetallesBoletosPorCliente(usuarioActivo.getIdUsuario()));
 
         } catch (excepciones.BDException e) {
             request.setAttribute("error", "Error al cargar tu perfil: " + e.getMessage());

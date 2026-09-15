@@ -1,7 +1,5 @@
 package controladores;
 
-import dao.RutaDAO;
-import dao.SucursalDAO;
 import dao.ViajeDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -16,14 +14,10 @@ public class ViajesDisponiblesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            request.setAttribute("listaViajes", new ViajeDAO().listarViajesDisponibles());
-            request.setAttribute("listaRutas", new RutaDAO().listarTodasLasRutas());
-            request.setAttribute("listaSucursales", new SucursalDAO().listarSucursales());
-            
+            request.setAttribute("listaViajes", new ViajeDAO().listarViajesDisponiblesConDetalle());
         } catch (Exception e) {
             request.setAttribute("error", "No se pudo cargar la cartelera de viajes en este momento.");
-        }
-        
+        }     
         request.getRequestDispatcher("/PaginasUsuarios/viajes_disponibles.jsp").forward(request, response);
     }
 }

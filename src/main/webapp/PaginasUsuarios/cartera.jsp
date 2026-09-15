@@ -71,8 +71,13 @@
                                         <label class="form-label small text-muted mb-0">Hasta:</label>
                                         <input type="date" class="form-control form-control-sm" name="fechaFin" value="${param.fechaFin}">
                                     </div>
-                                    <div class="col-md-2 d-flex align-items-end">
-                                        <button type="submit" class="btn btn-secondary btn-sm w-100"><i class="bi bi-search"></i></button>
+                                    <div class="col-md-2 d-flex align-items-end gap-2">
+                                        <button type="submit" class="btn btn-secondary btn-sm w-50" title="Buscar">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                        <a href="${pageContext.request.contextPath}/Mi_Cartera" class="btn btn-outline-danger btn-sm w-50" title="Limpiar Filtros">
+                                            <i class="bi bi-eraser"></i>
+                                        </a>
                                     </div>
                                     <% if (request.getParameter("fechaInicio") != null) { %>
                                     <div class="col-12 mt-2">

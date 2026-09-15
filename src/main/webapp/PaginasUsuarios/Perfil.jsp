@@ -4,10 +4,7 @@
 <%@page import="modelos.Enums"%>
 <%@page import="java.util.List"%>
 <%@page import="java.time.format.DateTimeFormatter"%>
-<%@page import="modelos.Boleto"%>
-<%@page import="modelos.Viaje"%>
-<%@page import="modelos.Ruta"%>
-<%@page import="modelos.Sucursal"%>
+<%@page import="modelos.BoletoDetalle"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="es">
@@ -27,13 +24,10 @@
                     <%
                         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
                         Cartera cartera = (Cartera) request.getAttribute("miCartera");
-                        List<ViajePrivado> listaPrivados = (List<ViajePrivado>) request.getAttribute("listaPrivadosCliente");
 
-                        //listas para regulares
-                        List<Boleto> listaBoletos = (List<Boleto>) request.getAttribute("listaBoletos");
-                        List<Viaje> listaViajesCliente = (List<Viaje>) request.getAttribute("listaViajesCliente");
-                        List<Ruta> listaRutas = (List<Ruta>) request.getAttribute("listaRutas");
-                        List<Sucursal> listaSucursales = (List<Sucursal>) request.getAttribute("listaSucursales");
+                        List<ViajePrivado> privadosActivos = (List<ViajePrivado>) request.getAttribute("privadosActivos");
+                        List<ViajePrivado> cotizaciones = (List<ViajePrivado>) request.getAttribute("cotizaciones");
+                        List<BoletoDetalle> listaBoletos = (List<BoletoDetalle>) request.getAttribute("listaBoletosDetalle");
 
                         DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
@@ -47,14 +41,9 @@
                             errorMsg = (String) session.getAttribute("error");
                     %>
 
-                    <% if (exitoMsg != null) {%>
-                    <div class="alert alert-success fw-bold"><%= exitoMsg%></div>
-                    <% session.removeAttribute("mensajeExito");
+                    <% if (exitoMsg != null) {%> <div class="alert alert-success fw-bold"><%= exitoMsg%></div> <% session.removeAttribute("mensajeExito");
                         } %>
-
-                    <% if (errorMsg != null) {%>
-                    <div class="alert alert-danger fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> <%= errorMsg%></div>
-                    <% session.removeAttribute("error");
+                    <% if (errorMsg != null) {%> <div class="alert alert-danger fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> <%= errorMsg%></div> <% session.removeAttribute("error");
                         }%>
 
                     <!-- Encabezado Principal del Perfil -->
@@ -105,67 +94,36 @@
 
                         <div class="card-body p-4 tab-content">
 
-                            <!-- Pestaña 1: Viajes Regulares -->
+                            <!-- Pestaña 1: Viajes Regulares  -->
                             <div class="tab-pane fade show active" id="tab-regulares">
                                 <% if (listaBoletos != null && !listaBoletos.isEmpty()) { %>
                                 <div class="list-group list-group-flush">
-                                    <% for (Boleto b : listaBoletos) {
-                                            Viaje vAsociado = null;
-                                            if (listaViajesCliente != null) {
-                                                for (Viaje v : listaViajesCliente) {
-                                                    if (v.getIdViaje() == b.getIdViaje()) {
-                                                        vAsociado = v;
-                                                        break;
-                                                    }
-                                                }
-                                            }
-
-                                            if (vAsociado != null) {
-                                                String origen = "Desconocido";
-                                                String destino = "Desconocido";
-                                                if (listaRutas != null && listaSucursales != null) {
-                                                    for (Ruta r : listaRutas) {
-                                                        if (r.getIdRuta() == vAsociado.getIdRuta()) {
-                                                            for (Sucursal s : listaSucursales) {
-                                                                if (s.getIdSucursal() == r.getIdOrigen()) {
-                                                                    origen = s.getNombre();
-                                                                }
-                                                                if (s.getIdSucursal() == r.getIdDestino()) {
-                                                                    destino = s.getNombre();
-                                                                }
-                                                            }
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                    %>
+                                    <% for (BoletoDetalle b : listaBoletos) {%>
                                     <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center">
                                         <div>
                                             <h6 class="mb-1 fw-bold text-dark">
-                                                <i class="bi bi-geo-alt-fill text-success"></i> <%= origen%> <br>
-                                                <i class="bi bi-flag-fill text-danger"></i> <%= destino%>
+                                                <i class="bi bi-geo-alt-fill text-success"></i> <%= b.getOrigen()%> <br>
+                                                <i class="bi bi-flag-fill text-danger"></i> <%= b.getDestino()%>
                                             </h6>
                                             <small class="text-muted">
-                                                <i class="bi bi-calendar-event"></i> Salida: <%= vAsociado.getFechaHoraSalidaEstimada().format(formatoFecha)%>
+                                                <i class="bi bi-calendar-event"></i> Salida: <%= b.getFechaHoraSalida().format(formatoFecha)%>
                                                 | <i class="bi bi-heptagon"></i> Asiento: <b>#<%= b.getNumeroAsiento()%></b>
                                             </small>
                                         </div>
                                         <div class="text-end">
                                             <span class="d-block fw-bold text-dark mb-1">Q.<%= String.format("%.2f", b.getPrecioPagado())%></span>
-
-                                            <% if (vAsociado.getEstadoViaje() == Enums.EstadoViaje.PROGRAMADO) { %>
+                                            <% if (b.getEstadoViaje() == Enums.EstadoViaje.PROGRAMADO) { %>
                                             <span class="badge bg-primary"><i class="bi bi-ticket-detailed"></i> Boleto Comprado</span>
-                                            <% } else if (vAsociado.getEstadoViaje() == Enums.EstadoViaje.EN_CURSO) { %>
+                                            <% } else if (b.getEstadoViaje() == Enums.EstadoViaje.EN_CURSO) { %>
                                             <span class="badge bg-warning text-dark"><i class="bi bi-bus-front-fill"></i> Viaje en Curso</span>
-                                            <% } else if (vAsociado.getEstadoViaje() == Enums.EstadoViaje.FINALIZADO) { %>
+                                            <% } else if (b.getEstadoViaje() == Enums.EstadoViaje.FINALIZADO) { %>
                                             <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Finalizado</span>
-                                            <% } else if (vAsociado.getEstadoViaje() == Enums.EstadoViaje.CANCELADO) { %>
+                                            <% } else if (b.getEstadoViaje() == Enums.EstadoViaje.CANCELADO) { %>
                                             <span class="badge bg-danger"><i class="bi bi-x-circle-fill"></i> Cancelado</span>
                                             <% } %>
                                         </div>
                                     </div>
-                                    <%      }
-                                            } %>
+                                    <% } %>
                                 </div>
                                 <% } else { %>
                                 <div class="alert alert-light text-center py-5">
@@ -176,21 +134,11 @@
                                 <% } %>
                             </div>
 
-                            <!-- Pestaña 2: Viajes Privados (PAGADOS, EN CURSO o FINALIZADOS) -->
+                            <!-- Pestaña 2: Viajes Privados  -->
                             <div class="tab-pane fade" id="tab-privados">
-                                <% boolean hayPrivados = false;
-                                    if (listaPrivados != null) {
-                                        for (ViajePrivado vp : listaPrivados) {
-                                            if (vp.getEstado() == Enums.EstadoViaje.PAGADA || vp.getEstado() == Enums.EstadoViaje.EN_CURSO || vp.getEstado() == Enums.EstadoViaje.FINALIZADO) {
-                                                hayPrivados = true;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    if (hayPrivados) { %>
+                                <% if (privadosActivos != null && !privadosActivos.isEmpty()) { %>
                                 <div class="list-group list-group-flush">
-                                    <% for (ViajePrivado vp : listaPrivados) {
-                                            if (vp.getEstado() == Enums.EstadoViaje.PAGADA || vp.getEstado() == Enums.EstadoViaje.EN_CURSO || vp.getEstado() == Enums.EstadoViaje.FINALIZADO) {%>
+                                    <% for (ViajePrivado vp : privadosActivos) {%>
                                     <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center">
                                         <div>
                                             <h6 class="mb-1 fw-bold text-dark">
@@ -204,9 +152,7 @@
                                                     if (vp.getIdBus() == null) { %>
                                             <span class="badge bg-primary">Esperando Asignación de Bus</span>
                                             <% } else { %>
-                                            <span class="badge bg-info text-dark fw-bold">
-                                                <i class="bi bi-bus-front-fill"></i> Unidad Asignada
-                                            </span>
+                                            <span class="badge bg-info text-dark fw-bold"><i class="bi bi-bus-front-fill"></i> Unidad Asignada</span>
                                             <% }
                                             } else if (vp.getEstado() == Enums.EstadoViaje.EN_CURSO) { %>
                                             <span class="badge bg-dark">Viaje en Curso</span>
@@ -215,8 +161,7 @@
                                             <% } %>
                                         </div>
                                     </div>
-                                    <% }
-                                        } %>
+                                    <% } %>
                                 </div>
                                 <% } else { %>
                                 <div class="alert alert-light text-center py-5">
@@ -226,21 +171,11 @@
                                 <% } %>
                             </div>
 
-                            <!-- Pestaña 3: Cotizaciones (PENDIENTE o COTIZADA) -->
+                            <!-- Pestaña 3: Cotizaciones  -->
                             <div class="tab-pane fade" id="tab-cotizaciones">
-                                <% boolean hayCotizaciones = false;
-                                    if (listaPrivados != null) {
-                                        for (ViajePrivado vp : listaPrivados) {
-                                            if (vp.getEstado() == Enums.EstadoViaje.PENDIENTE || vp.getEstado() == Enums.EstadoViaje.COTIZADA) {
-                                                hayCotizaciones = true;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    if (hayCotizaciones) { %>
+                                <% if (cotizaciones != null && !cotizaciones.isEmpty()) { %>
                                 <div class="list-group list-group-flush">
-                                    <% for (ViajePrivado vp : listaPrivados) {
-                                            if (vp.getEstado() == Enums.EstadoViaje.PENDIENTE || vp.getEstado() == Enums.EstadoViaje.COTIZADA) {%>
+                                    <% for (ViajePrivado vp : cotizaciones) {%>
                                     <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center">
                                         <div>
                                             <h6 class="mb-1 fw-bold text-dark">
@@ -269,8 +204,7 @@
                                             <% } %>
                                         </div>
                                     </div>
-                                    <% }
-                                        } %>
+                                    <% } %>
                                 </div>
                                 <% } else { %>
                                 <div class="alert alert-light text-center py-5">
@@ -296,7 +230,6 @@
                     </div>
                     <form action="${pageContext.request.contextPath}/Mi_Perfil" method="POST">
                         <div class="modal-body">
-                            <!-- ACCIÓN EXCLUSIVA PARA EL PERFIL -->
                             <input type="hidden" name="accion" value="actualizar_perfil">
 
                             <div class="row g-3">

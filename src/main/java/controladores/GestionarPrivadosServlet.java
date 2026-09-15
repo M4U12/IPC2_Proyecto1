@@ -96,11 +96,8 @@ public class GestionarPrivadosServlet extends HttpServlet {
             } else if ("asignar".equals(accion)) {
                 int idBus = Integer.parseInt(request.getParameter("id_bus"));
                 int idChofer = Integer.parseInt(request.getParameter("id_chofer"));
-
-                vpDAO.asignarRecursos(idViaje, idBus, idChofer);
-                new dao.BusDAO().actualizarEstadoOperativo(idBus, Enums.EstadoOperativo.EN_RUTA);
-                new dao.ChoferDAO().actualizarEstadoOperativo(idChofer, Enums.EstadoOperativo.EN_RUTA);
-                sesion.setAttribute("mensajeExito", "Unidad y chofer asignados. Listo para salir.");
+                vpDAO.procesarAsignacionCompleta(idViaje, idBus, idChofer);
+                sesion.setAttribute("mensajeExito", "Unidad y chofer asignados de forma segura. Listo para salir.");
             } else if ("iniciar".equals(accion)) {
                 double kmSalida = Double.parseDouble(request.getParameter("kilometraje_salida"));
                 double kmActualBus = Double.parseDouble(request.getParameter("km_actual_bus"));
@@ -118,16 +115,12 @@ public class GestionarPrivadosServlet extends HttpServlet {
                 LocalDateTime llegadaReal = LocalDateTime.parse(request.getParameter("fecha_hora_llegada_real"));
 
                 if (kmLlegada < kmSalida) {
-                    throw new Exception("El kilometraje final (" + kmLlegada + ") no puede ser menor al kilometraje de salida (" + kmSalida + ").");
+                    throw new Exception("El kilometraje final (" + kmLlegada + ") no puede ser menor al de salida (" + kmSalida + ").");
                 }
-                vpDAO.finalizarViaje(idViaje, kmLlegada, gasto, llegadaReal);
-
+                
                 int idBus = Integer.parseInt(request.getParameter("id_bus"));
                 int idChofer = Integer.parseInt(request.getParameter("id_chofer"));
-
-                new BusDAO().actualizarEstadoOperativoYKilometraje(idBus, Enums.EstadoOperativo.DISPONIBLE, kmLlegada);
-                new ChoferDAO().actualizarEstadoOperativo(idChofer, Enums.EstadoOperativo.DISPONIBLE);
-
+                vpDAO.procesarFinalizacionCompleta(idViaje, idBus, idChofer, kmLlegada, gasto, llegadaReal);
                 sesion.setAttribute("mensajeExito", "Viaje privado finalizado con éxito.");
             }
         } catch (Exception e) {

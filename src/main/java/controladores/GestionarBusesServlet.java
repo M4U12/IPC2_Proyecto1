@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
+import java.time.LocalDate;
 import modelos.Mantenimiento;
 
 @WebServlet(name = "GestionarBusesServlet", urlPatterns = {"/Gestionar_Buses"})
@@ -146,7 +147,7 @@ public class GestionarBusesServlet extends HttpServlet {
                 request.getSession().setAttribute("mensajeExito", "El bus ha pasado a estado: " + nuevoEstado);
             } else if ("fin_mantenimiento".equals(accion)) {
                 int idBus = Integer.parseInt(request.getParameter("id_bus"));
-                java.time.LocalDate fecha = java.time.LocalDate.parse(request.getParameter("fecha_mantenimiento"));
+                LocalDate fecha = java.time.LocalDate.parse(request.getParameter("fecha_mantenimiento"));
                 double manoObra = Double.parseDouble(request.getParameter("monto_mano_obra"));
                 double repuestos = Double.parseDouble(request.getParameter("monto_repuestos"));
                 String descripcion = request.getParameter("descripcion");

@@ -27,8 +27,12 @@
             <a href="${pageContext.request.contextPath}/Gestionar_Sucursales">Gestión de Sucursales</a>
             <a href="${pageContext.request.contextPath}/Gestionar_Admin_Sucursal">Administrar Personal</a>
             <a href="${pageContext.request.contextPath}/Parametros">Parámetros</a>
-            <a href="${pageContext.request.contextPath}/AdminSistema/reportes_globales.jsp">Reportes Globales</a>
             <a href="${pageContext.request.contextPath}/Mapa_Rutas">Mapa de Rutas</a>
+            <a href="${pageContext.request.contextPath}/Reporte_Ganancias">Reporte de Ganancias</a>
+            <a href="${pageContext.request.contextPath}/Reporte_Rutas">Reporte de Rutas</a>
+            <a href="${pageContext.request.contextPath}/Reporte_Costos">Reporte de Costos</a>
+
+            
         <% } %>
 
         <% if (usuario.getRol() == Enums.RolUsuario.ADMINISTRADOR_SUCURSAL) { %>
@@ -38,7 +42,6 @@
             <a href="${pageContext.request.contextPath}/Gestionar_Rutas">Rutas</a>
             <a href="${pageContext.request.contextPath}/Gestionar_Viajes">Viajes Regulares</a>
             <a href="${pageContext.request.contextPath}/Gestionar_Privados">Viajes Privados</a>
-            <a href="${pageContext.request.contextPath}/AdminSucursal/registros_diarios.jsp">Registros Diarios</a>
             <a href="${pageContext.request.contextPath}/AdminSucursal/reportes_sucursal.jsp">Reportes</a>
         <% } %>
 

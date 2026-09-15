@@ -41,7 +41,7 @@ public class ViajePrivadoDAO {
         List<ViajePrivado> lista = new ArrayList<>();
         String query = "SELECT vp.*, u.nombre as nombre_cliente FROM viajes_privados vp "
                 + "INNER JOIN usuarios u ON vp.id_cliente = u.id_usuario "
-                + "WHERE vp.id_sucursal = ? ORDER BY vp.fecha_hora_salida_estimada ASC";
+                + "WHERE vp.id_sucursal = ? ORDER BY vp.fecha_hora_salida_estimada DESC";
 
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, idSucursal);
@@ -77,7 +77,7 @@ public class ViajePrivadoDAO {
 
                     Timestamp llegadaReal = rs.getTimestamp("fecha_hora_llegada_real");
                     vp.setFechaHoraLlegadaReal(llegadaReal != null ? llegadaReal.toLocalDateTime() : null);
-                    
+
                     double kmSalida = rs.getDouble("kilometraje_salida");
                     vp.setKilometrajeSalida(rs.wasNull() ? null : kmSalida);
 
@@ -105,7 +105,7 @@ public class ViajePrivadoDAO {
         }
     }
 
-    public boolean asignarRecursos(int idViajePrivado, int idBus, int idChofer) throws BDException {
+    public boolean asignarRecursos(int idViajePrivado, int idBus, int idChofer, Connection conn) throws BDException {
         String query = "UPDATE viajes_privados SET id_bus = ?, id_chofer = ? WHERE id_viaje_privado = ? AND estado = 'PAGADA'";
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, idBus);
@@ -129,7 +129,7 @@ public class ViajePrivadoDAO {
         }
     }
 
-    public boolean finalizarViaje(int idViajePrivado, double kilometrajeLlegada, double gastoCombustible, LocalDateTime fechaHoraLlegadaReal) throws BDException {
+    public boolean finalizarViaje(int idViajePrivado, double kilometrajeLlegada, double gastoCombustible, LocalDateTime fechaHoraLlegadaReal, Connection conn) throws BDException {
         String query = "UPDATE viajes_privados SET estado = 'FINALIZADO', kilometraje_llegada = ?, gasto_combustible = ?, fecha_hora_llegada_real = ? WHERE id_viaje_privado = ?";
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setDouble(1, kilometrajeLlegada);
@@ -249,6 +249,64 @@ public class ViajePrivadoDAO {
             }
         } catch (SQLException e) {
             throw new BDException("Error al eliminar el viaje privado: " + e.getMessage(), e);
+        }
+    }
+
+    public void procesarAsignacionCompleta(int idViaje, int idBus, int idChofer) throws BDException {
+        Connection conn = null;
+        try {
+            conn = conexionDB.getConection();
+            conn.setAutoCommit(false);
+
+            asignarRecursos(idViaje, idBus, idChofer, conn);
+            new BusDAO().modificacionChoferTrans(idChofer, idBus, conn);
+            new BusDAO().actualizarEstadoOperativoTrans(idBus, Enums.EstadoOperativo.EN_RUTA, conn);
+            new ChoferDAO().actualizarEstadoOperativoTrans(idChofer, Enums.EstadoOperativo.EN_RUTA, conn);
+
+            conn.commit();
+        } catch (SQLException e) {
+            if (conn != null) try {
+                conn.rollback();
+            } catch (SQLException ex) {
+                throw new BDException("Error en Rollback: " + ex.getMessage());
+            }
+            throw new BDException("La operación falló y se cancelaron los cambios: " + e.getMessage());
+        } finally {
+            if (conn != null) try {
+                conn.setAutoCommit(true);
+                conn.close();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    public void procesarFinalizacionCompleta(int idViaje, int idBus, int idChofer, double kmLlegada, double gasto, LocalDateTime llegadaReal) throws BDException {
+        Connection conn = null;
+        try {
+            conn = conexionDB.getConection();
+            conn.setAutoCommit(false); 
+
+            finalizarViaje(idViaje, kmLlegada, gasto, llegadaReal, conn);
+            new BusDAO().actualizarEstadoOperativoYKilometraje(idBus, Enums.EstadoOperativo.DISPONIBLE, kmLlegada, conn);
+            new ChoferDAO().actualizarEstadoOperativoTrans(idChofer, Enums.EstadoOperativo.DISPONIBLE, conn);
+            new BusDAO().modificacionChoferTrans(null, idBus, conn);
+
+            conn.commit(); 
+        } catch (SQLException e) {
+            if (conn != null) try {
+                conn.rollback();
+            } catch (SQLException ex) {
+                throw new BDException("Error en Rollback: " + ex.getMessage());
+            }
+            throw new BDException("Fallo al finalizar el viaje: " + e.getMessage());
+        } finally {
+            if (conn != null) try {
+                conn.setAutoCommit(true);
+                conn.close();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 }

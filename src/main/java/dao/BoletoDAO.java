@@ -8,8 +8,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import modelos.BoletoDetalle;
+import modelos.Enums;
 
 public class BoletoDAO {
 
@@ -153,7 +156,7 @@ public class BoletoDAO {
                 psTx.setInt(1, idCartera);
                 psTx.setDouble(2, precio);
                 psTx.setString(3, tipoTransaccion);
-                psTx.setTimestamp(4, java.sql.Timestamp.valueOf(boleto.getFechaPago()));
+                psTx.setTimestamp(4, Timestamp.valueOf(boleto.getFechaPago()));
                 psTx.setString(5, descripcion);
                 psTx.executeUpdate();
 
@@ -162,7 +165,7 @@ public class BoletoDAO {
                 psBoleto.setInt(2, boleto.getIdViaje());
                 psBoleto.setInt(3, boleto.getNumeroAsiento());
                 psBoleto.setDouble(4, precio);
-                psBoleto.setTimestamp(5, java.sql.Timestamp.valueOf(boleto.getFechaPago()));
+                psBoleto.setTimestamp(5, Timestamp.valueOf(boleto.getFechaPago()));
                 psBoleto.executeUpdate();
 
                 connection.commit();
@@ -206,5 +209,48 @@ public class BoletoDAO {
             throw new BDException("Error al listar los boletos: " + e.getMessage(), e);
         }
         return listaBoletos;
+    }
+    
+    public List<BoletoDetalle> listarDetallesBoletosPorCliente(int idCliente) throws BDException {
+        List<BoletoDetalle> lista = new ArrayList<>();
+        
+        String query = "SELECT b.id_boleto, b.numero_asiento, b.precio_pagado, " +
+                       "so.nombre AS origen, sd.nombre AS destino, " +
+                       "v.fecha_hora_salida_estimada, v.estado_viaje " +
+                       "FROM boletos b " +
+                       "INNER JOIN viajes v ON b.id_viaje = v.id_viaje " +
+                       "INNER JOIN rutas r ON v.id_ruta = r.id_ruta " +
+                       "INNER JOIN sucursales so ON r.id_origen = so.id_sucursal " +
+                       "INNER JOIN sucursales sd ON r.id_destino = sd.id_sucursal " +
+                       "WHERE b.id_usuario = ? ORDER BY v.fecha_hora_salida_estimada DESC";
+
+        try (Connection connection = conexionDB.getConection(); 
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            
+            ps.setInt(1, idCliente);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Enums.EstadoViaje estado = Enums.EstadoViaje.valueOf(rs.getString("estado_viaje"));
+                    LocalDateTime fecha = null;
+                    if (rs.getTimestamp("fecha_hora_salida_estimada") != null) {
+                        fecha = rs.getTimestamp("fecha_hora_salida_estimada").toLocalDateTime();
+                    }
+                    
+                    lista.add(new BoletoDetalle(
+                            rs.getInt("id_boleto"),
+                            rs.getInt("numero_asiento"),
+                            rs.getDouble("precio_pagado"),
+                            rs.getString("origen"),
+                            rs.getString("destino"),
+                            fecha,
+                            estado
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            throw new excepciones.BDException("Error al listar historial de boletos: " + e.getMessage(), e);
+        }
+        return lista;
     }
 }

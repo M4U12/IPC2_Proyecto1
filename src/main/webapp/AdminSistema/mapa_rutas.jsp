@@ -49,7 +49,7 @@
         </div>
 
         <script>
-            // Transformar listas de Java a formato JSON para JavaScript
+            // Transformar listas de java a formato JSON para js
             const datosSucursales = [
             <%
                     if (sucursales != null) {

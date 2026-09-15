@@ -128,4 +128,13 @@ public class ChoferDAO {
             throw new BDException("Error al cambiar estado operativo del chofer: " + e.getMessage(), e);
         }
     }
+    
+    public boolean actualizarEstadoOperativoTrans(int idChofer, Enums.EstadoOperativo estado, Connection conn) throws SQLException {
+        String query = "UPDATE choferes SET estado_operativo = ? WHERE id_chofer = ?";
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, estado.name());
+            ps.setInt(2, idChofer);
+            return ps.executeUpdate() > 0;
+        }
+    }
 }
