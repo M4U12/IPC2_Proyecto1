@@ -1,3 +1,4 @@
+<%@page import="java.time.LocalDate"%>
 <%@page import="java.util.List"%>
 <%@page import="modelos.Chofer"%>
 <%@page import="modelos.Enums"%>
@@ -13,7 +14,7 @@
         <div class="container-fluid p-0">
             <div class="row g-0">
                 <jsp:include page="/Componentes/sidebar.jsp" />
-
+                <% String fechaHoy = LocalDate.now().toString(); %>
                 <div class="col-md-9 col-lg-10 p-5">
                     <div class="p-4 bg-white rounded-4 shadow-sm mb-4">
                         <h2 class="fw-bold">Gestión de Choferes Locales</h2>
@@ -66,7 +67,7 @@
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">Vencimiento</label>
-                                            <input type="date" class="form-control" name="fecha_vencimiento" required>
+                                            <input type="date" class="form-control" name="fecha_vencimiento" min="<%= fechaHoy %>" required>
                                         </div>
                                     </div>
                                     <div class="mb-4">
@@ -189,7 +190,7 @@
                                                                             </div>
                                                                             <div class="col-md-6 mb-3">
                                                                                 <label class="form-label text-start d-block">Vencimiento</label>
-                                                                                <input type="date" class="form-control" name="fecha_vencimiento" value="<%= c.getFechaVencimientoLicencia()%>" required>
+                                                                                <input type="date" class="form-control" name="fecha_vencimiento" value="<%= c.getFechaVencimientoLicencia()%>" min="<%= fechaHoy%>"required>
                                                                             </div>
                                                                         </div>
                                                                         <div class="mb-3">

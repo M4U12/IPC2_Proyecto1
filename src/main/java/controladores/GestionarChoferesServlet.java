@@ -65,7 +65,7 @@ public class GestionarChoferesServlet extends HttpServlet {
                 String telefono = request.getParameter("telefono");
                 String numLicencia = request.getParameter("num_licencia");
 
-                String errorValidacion = validarDatosChofer(nombre, telefono, numLicencia);
+                String errorValidacion = validarDatosChofer(nombre, telefono, numLicencia, request.getParameter("fecha_vencimiento"));
                 if (errorValidacion != null) {
                     request.getSession().setAttribute("error", errorValidacion);
                     response.sendRedirect(request.getContextPath() + "/Gestionar_Choferes");
@@ -117,7 +117,7 @@ public class GestionarChoferesServlet extends HttpServlet {
                 String numLicencia = request.getParameter("num_licencia");
                 String fotoBase64 = request.getParameter("foto_actual");
 
-                String errorValidacion = validarDatosChofer(nombre, telefono, numLicencia);
+                String errorValidacion = validarDatosChofer(nombre, telefono, numLicencia, request.getParameter("fecha_vencimiento"));
                 if (errorValidacion != null) {
                     request.getSession().setAttribute("error", errorValidacion);
                     response.sendRedirect(request.getContextPath() + "/Gestionar_Choferes");
@@ -153,7 +153,7 @@ public class GestionarChoferesServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/Gestionar_Choferes");
     }
 
-    private String validarDatosChofer(String nombre, String telefono, String numLicencia) {
+    private String validarDatosChofer(String nombre, String telefono, String numLicencia, String fechaVencimientoStr) {
         if (nombre == null || !nombre.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$")) {
             return "El nombre solo debe contener letras y espacios.";
         }
@@ -162,6 +162,15 @@ public class GestionarChoferesServlet extends HttpServlet {
         }
         if (numLicencia == null || !numLicencia.matches("\\d{13}")) {
             return "La licencia debe contener exactamente 13 dígitos numéricos.";
+        }
+        
+        try {
+            LocalDate fechaVencimiento = LocalDate.parse(fechaVencimientoStr);
+            if (fechaVencimiento.isBefore(LocalDate.now())) {
+                return "La licencia ingresada ya está vencida.";
+            }
+        } catch (Exception e) {
+            return "Fecha de vencimiento inválida.";
         }
         return null;
     }
