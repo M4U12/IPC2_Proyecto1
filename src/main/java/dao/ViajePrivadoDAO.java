@@ -12,6 +12,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ViajePrivadoDAO {
 
@@ -285,14 +286,14 @@ public class ViajePrivadoDAO {
         Connection conn = null;
         try {
             conn = conexionDB.getConection();
-            conn.setAutoCommit(false); 
+            conn.setAutoCommit(false);
 
             finalizarViaje(idViaje, kmLlegada, gasto, llegadaReal, conn);
             new BusDAO().actualizarEstadoOperativoYKilometraje(idBus, Enums.EstadoOperativo.DISPONIBLE, kmLlegada, conn);
             new ChoferDAO().actualizarEstadoOperativoTrans(idChofer, Enums.EstadoOperativo.DISPONIBLE, conn);
             new BusDAO().modificacionChoferTrans(null, idBus, conn);
 
-            conn.commit(); 
+            conn.commit();
         } catch (SQLException e) {
             if (conn != null) try {
                 conn.rollback();
@@ -308,5 +309,38 @@ public class ViajePrivadoDAO {
                 ex.printStackTrace();
             }
         }
+    }
+
+    public Optional<ViajePrivado> obtenerViajePrivadoActivoPorChofer(int idChofer) throws BDException {
+        String query = "SELECT * FROM viajes_privados WHERE id_chofer = ? AND estado IN ('PAGADA', 'EN_CURSO') LIMIT 1";
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, idChofer);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    ViajePrivado vp = new ViajePrivado();
+                    vp.setIdViajePrivado(rs.getInt("id_viaje_privado"));
+                    vp.setIdBus(rs.getInt("id_bus"));
+                    vp.setIdChofer(rs.getInt("id_chofer"));
+                    vp.setOrigen(rs.getString("origen"));
+                    vp.setDestino(rs.getString("destino"));
+                    vp.setEstado(Enums.EstadoViaje.valueOf(rs.getString("estado")));
+
+                    Timestamp salidaEst = rs.getTimestamp("fecha_hora_salida_estimada");
+                    if (salidaEst != null) {
+                        vp.setFechaHoraSalidaEstimada(salidaEst.toLocalDateTime());
+                    }
+
+                    double kmSalida = rs.getDouble("kilometraje_salida");
+                    if (!rs.wasNull()) {
+                        vp.setKilometrajeSalida(kmSalida);
+                    }
+
+                    return Optional.of(vp);
+                }
+            }
+        } catch (SQLException e) {
+            throw new BDException("Error al buscar el viaje privado activo: " + e.getMessage(), e);
+        }
+        return Optional.empty(); 
     }
 }

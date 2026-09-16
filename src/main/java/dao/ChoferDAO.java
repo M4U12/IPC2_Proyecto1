@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import modelos.Chofer;
 import modelos.Enums;
 
@@ -128,7 +129,7 @@ public class ChoferDAO {
             throw new BDException("Error al cambiar estado operativo del chofer: " + e.getMessage(), e);
         }
     }
-    
+
     public boolean actualizarEstadoOperativoTrans(int idChofer, Enums.EstadoOperativo estado, Connection conn) throws SQLException {
         String query = "UPDATE choferes SET estado_operativo = ? WHERE id_chofer = ?";
         try (PreparedStatement ps = conn.prepareStatement(query)) {
@@ -136,5 +137,28 @@ public class ChoferDAO {
             ps.setInt(2, idChofer);
             return ps.executeUpdate() > 0;
         }
+    }
+
+    public Optional<Chofer> autenticarPorLicencia(String numLicencia) throws BDException {
+        String query = "SELECT * FROM choferes WHERE num_licencia = ? AND estado = TRUE";
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setString(1, numLicencia);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(new Chofer(
+                            rs.getInt("id_chofer"), rs.getInt("id_sucursal"),
+                            rs.getString("nombre"), rs.getString("foto"), rs.getString("num_licencia"),
+                            Enums.TipoLicencia.valueOf(rs.getString("tipo_licencia")),
+                            rs.getDate("fecha_vencimiento_licencia").toLocalDate(),
+                            rs.getString("telefono"), rs.getDouble("salario_base_por_viaje"),
+                            Enums.EstadoOperativo.valueOf(rs.getString("estado_operativo")),
+                            rs.getBoolean("estado")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            throw new BDException("Error al buscar chofer por licencia: " + e.getMessage(), e);
+        }
+        return Optional.empty();
     }
 }

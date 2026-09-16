@@ -12,6 +12,7 @@ import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import modelos.Enums;
 import modelos.ViajeDisponibleDetalle;
 
@@ -180,7 +181,6 @@ public class ViajeDAO {
         return viaje;
     }
 
-
     public boolean registrarViajeTrans(Viaje viaje, Connection conn) throws SQLException {
         String query = "INSERT INTO viajes (estado_viaje, id_bus, id_chofer, id_ruta, fecha_hora_salida_estimada, fecha_hora_llegada_estimada) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(query)) {
@@ -207,7 +207,6 @@ public class ViajeDAO {
         }
     }
 
-
     public boolean iniciarViaje(int idViaje, double kilometrajeSalida, LocalDateTime fechaHoraSalidaReal) throws BDException {
         String query = "UPDATE viajes SET estado_viaje = 'EN_CURSO', kilometraje_salida = ?, fecha_hora_salida_real = ? WHERE id_viaje = ?";
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
@@ -219,7 +218,6 @@ public class ViajeDAO {
             throw new BDException("Error al iniciar el viaje: " + e.getMessage(), e);
         }
     }
-
 
     public void procesarProgramacionCompleta(Viaje nuevoViaje, int idBus, int idChofer) throws BDException {
         Connection conn = null;
@@ -349,7 +347,7 @@ public class ViajeDAO {
 
             new BusDAO().actualizarEstadoOperativoYKilometraje(idBus, Enums.EstadoOperativo.DISPONIBLE, kmLlegada, conn);
             new ChoferDAO().actualizarEstadoOperativoTrans(idChofer, Enums.EstadoOperativo.DISPONIBLE, conn);
-            new BusDAO().modificacionChoferTrans(null, idBus, conn); 
+            new BusDAO().modificacionChoferTrans(null, idBus, conn);
 
             conn.commit();
         } catch (SQLException e) {
@@ -365,5 +363,20 @@ public class ViajeDAO {
             } catch (SQLException ex) {
             }
         }
+    }
+
+    public Optional<Viaje> obtenerViajeActivoPorChofer(int idChofer) throws BDException {
+        String query = "SELECT * FROM viajes WHERE id_chofer = ? AND estado_viaje IN ('PROGRAMADO', 'EN_CURSO') LIMIT 1";
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, idChofer);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(extraerViajeDeResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new BDException("Error al buscar el viaje regular activo: " + e.getMessage(), e);
+        }
+        return Optional.empty(); 
     }
 }

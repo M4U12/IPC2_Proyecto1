@@ -15,6 +15,7 @@
     <% if (usuario == null) { %>
         <hr class="border-secondary mx-3">
         <a href="${pageContext.request.contextPath}/Login" class="text-info">Iniciar Sesión</a>
+        <a href="${pageContext.request.contextPath}/Portal_Chofer">Portal Chofer</a>
     <% } else { %>
         <strong class="text-secondary section-title mt-4 d-block">MI CUENTA</strong>
         <a href="${pageContext.request.contextPath}/Comprar_Boleto">Comprar Boletos</a>
@@ -42,7 +43,12 @@
             <a href="${pageContext.request.contextPath}/Gestionar_Rutas">Rutas</a>
             <a href="${pageContext.request.contextPath}/Gestionar_Viajes">Viajes Regulares</a>
             <a href="${pageContext.request.contextPath}/Gestionar_Privados">Viajes Privados</a>
-            <a href="${pageContext.request.contextPath}/AdminSucursal/reportes_sucursal.jsp">Reportes</a>
+            <a href="${pageContext.request.contextPath}/Reporte_Buses_Sucursal">Reporte de Buses</a>
+            <a href="${pageContext.request.contextPath}/Reporte_Choferes_Sucursal">Reporte de Choferes</a>
+            <a href="${pageContext.request.contextPath}/Reporte_Ingreso_Boletos_Sucursal">Ingresos por Boletos</a>
+            <a href="${pageContext.request.contextPath}/Reporte_Ingreso_Alquiler_Sucursal">Ingresos por Alquiler</a>
+            <a href="${pageContext.request.contextPath}/Reporte_Depreciacion_Sucursal">Depreciación de Buses</a>
+
         <% } %>
 
         <hr class="border-secondary mx-3 mt-4">

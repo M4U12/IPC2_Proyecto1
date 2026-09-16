@@ -4,6 +4,7 @@ import dbconection.DBConection;
 import excepciones.BDException;
 import modelos.Mantenimiento;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,7 +26,7 @@ public class MantenimientoDAO {
              PreparedStatement ps = connection.prepareStatement(query)) {
             
             ps.setInt(1, mantenimiento.getIdBus());
-            ps.setDate(2, java.sql.Date.valueOf(mantenimiento.getFechaMantenimiento()));
+            ps.setDate(2, Date.valueOf(mantenimiento.getFechaMantenimiento()));
             ps.setDouble(3, mantenimiento.getMontoManoObra());
             ps.setDouble(4, mantenimiento.getMontoRepuestos());
             ps.setString(5, mantenimiento.getDescripcion());

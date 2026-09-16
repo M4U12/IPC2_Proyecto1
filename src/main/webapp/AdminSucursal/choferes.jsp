@@ -166,7 +166,7 @@
                                                                         </div>
                                                                         <div class="mb-3">
                                                                             <label class="form-label text-start d-block">Nombre Completo</label>
-                                                                            <input type="text" class="form-control" name="nombre" value="<%= c.getNombre()%>" pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Solo letras y espacios permitidos" onkeypress="soloLetras(event)" required>
+                                                                            <input type="text" class="form-control" name="nombre" value="<%= c.getNombre()%>"  onkeypress="soloLetras(event)" required>
                                                                         </div>
                                                                         <div class="mb-3">
                                                                             <label class="form-label text-start d-block">Teléfono</label>

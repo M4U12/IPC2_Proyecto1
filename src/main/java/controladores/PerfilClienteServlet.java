@@ -75,6 +75,7 @@ public class PerfilClienteServlet extends HttpServlet {
         if (usuarioActivo != null) {
             try {
                 if ("actualizar_perfil".equals(accion)) {
+                    usuarioActivo.setDpi(request.getParameter("dpi"));
                     usuarioActivo.setNombre(request.getParameter("nombre"));
                     usuarioActivo.setNit(request.getParameter("nit"));
                     usuarioActivo.setTelefono(request.getParameter("telefono"));

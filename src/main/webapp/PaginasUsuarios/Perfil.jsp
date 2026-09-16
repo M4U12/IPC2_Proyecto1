@@ -81,7 +81,7 @@
                                 </li>
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link fw-bold py-3 text-dark border-0" data-bs-toggle="tab" data-bs-target="#tab-privados">
-                                        <i class="bi bi-star"></i> Viajes Privados Activos
+                                        <i class="bi bi-star"></i> Viajes Privados
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
@@ -234,20 +234,20 @@
 
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold small text-muted">DPI (No modificable)</label>
-                                    <input type="text" class="form-control bg-light" value="<%= usuario.getDpi()%>" readonly>
+                                    <label class="form-label fw-bold small text-muted">DPI</label>
+                                    <input type="text" class="form-control bg-light" name="dpi" maxlength="13" pattern="\d{13}" title="Debe contener exactamente 13 números" onkeypress="soloNumeros(event)" value="<%= usuario.getDpi()%>" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small">Nombre Completo</label>
-                                    <input type="text" class="form-control" name="nombre" value="<%= usuario.getNombre()%>" required>
+                                    <input type="text" class="form-control" name="nombre" value="<%= usuario.getNombre()%>" onkeypress="soloLetras(event)" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small">NIT</label>
-                                    <input type="text" class="form-control" name="nit" value="<%= usuario.getNit()%>" required>
+                                    <input type="text" class="form-control" name="nit" maxlength="13" pattern="\d{13}" title="Debe contener exactamente 13 números" onkeypress="soloNumeros(event)" value="<%= usuario.getNit()%>" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small">Teléfono</label>
-                                    <input type="text" class="form-control" name="telefono" value="<%= usuario.getTelefono()%>" required>
+                                    <input type="text" class="form-control" name="telefono" maxlength="8" pattern="\d{8}" title="Debe contener exactamente 8 números" onkeypress="soloNumeros(event)" value="<%= usuario.getTelefono()%>" required>
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label fw-bold small">Dirección</label>

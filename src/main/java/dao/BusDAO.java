@@ -140,7 +140,7 @@ public class BusDAO {
     public boolean actualizarEstadoOperativoYKilometraje(int idBus, Enums.EstadoOperativo estado, double nuevoKilometraje, Connection conn) throws BDException {
         String query = "UPDATE buses SET estado_operativo = ?, kilometraje_actual = ? WHERE id_bus = ?";
 
-        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setString(1, estado.name());
             ps.setDouble(2, nuevoKilometraje);
