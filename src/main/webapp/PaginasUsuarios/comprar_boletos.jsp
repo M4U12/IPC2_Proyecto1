@@ -2,6 +2,8 @@
 <%@page import="modelos.Viaje"%>
 <%@page import="modelos.Cartera"%>
 <%@page import="modelos.Usuario"%>
+<%@page import="java.time.LocalDateTime"%>
+<%@page import="java.time.format.DateTimeFormatter"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="es">
@@ -29,6 +31,8 @@
                         boolean saldoSuficiente = saldo >= precio;
 
                         int asientosLibres = capacidad - (ocupados != null ? ocupados.size() : 0);
+                        DateTimeFormatter formatoInput = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+                        String fechaActual = LocalDateTime.now().format(formatoInput);
                     %>
 
                     <div class="row justify-content-center">
@@ -69,6 +73,10 @@
                                         <input type="hidden" name="precio" value="<%= precio%>">
                                         <input type="hidden" name="id_cartera" value="<%= cartera != null ? cartera.getIdCartera() : 0%>">
 
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Fecha y Hora de Pago</label>
+                                            <input type="datetime-local" class="form-control" name="fecha_pago" value="<%= fechaActual %>" required>
+                                        </div>
                                         <div class="mb-4">
                                             <label class="form-label fw-bold">Selecciona tu asiento (<%= asientosLibres%> libres)</label>
                                             <select name="numero_asiento" class="form-select form-select-lg" required>

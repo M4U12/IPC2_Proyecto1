@@ -98,6 +98,7 @@ public class ComprarBoletoServlet extends HttpServlet {
         int asiento = Integer.parseInt(request.getParameter("numero_asiento"));
         double precio = Double.parseDouble(request.getParameter("precio"));
         int idCartera = Integer.parseInt(request.getParameter("id_cartera"));
+        LocalDateTime fechaPagoSimulada = LocalDateTime.parse(request.getParameter("fecha_pago"));
 
         try {
             Boleto nuevoBoleto = new Boleto();
@@ -105,13 +106,13 @@ public class ComprarBoletoServlet extends HttpServlet {
             nuevoBoleto.setIdViaje(idViaje);
             nuevoBoleto.setNumeroAsiento(asiento);
             nuevoBoleto.setPrecioPagado(precio);
-            nuevoBoleto.setFechaPago(LocalDateTime.now());
+            nuevoBoleto.setFechaPago(fechaPagoSimulada);
             new BoletoDAO().comprarBoletoTransaccional(nuevoBoleto, idCartera, precio, Enums.TipoTransacciones.PAGO_BOLETO.name(), "Compra Asiento #" + asiento + " Viaje #" + idViaje);
 
             request.getSession().setAttribute("mensajeExito", "Boleto comprado exitosamente. Asiento #" + asiento);
             response.sendRedirect(request.getContextPath() + "/Viajes_Disponibles");
 
-        } catch (Exception e) {
+        } catch (BDException | IOException e) {
             request.getSession().setAttribute("error", e.getMessage());
             response.sendRedirect(request.getContextPath() + "/Comprar_Boleto?id_viaje=" + idViaje);
         }

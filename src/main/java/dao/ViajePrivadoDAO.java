@@ -23,8 +23,8 @@ public class ViajePrivadoDAO {
     }
 
     public boolean registrarSolicitud(ViajePrivado viaje) throws BDException {
-        String query = "INSERT INTO viajes_privados (id_cliente, id_sucursal, origen, destino, cantidad_pasajeros, fecha_hora_salida_estimada, estado) "
-                + "VALUES (?, ?, ?, ?, ?, ?, 'PENDIENTE')";
+        String query = "INSERT INTO viajes_privados (id_cliente, id_sucursal, origen, destino, cantidad_pasajeros, fecha_hora_salida_estimada, fecha_hora_llegada_estimada, precio, estado) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PENDIENTE')";
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, viaje.getIdCliente());
             ps.setInt(2, viaje.getIdSucursal());
@@ -32,6 +32,8 @@ public class ViajePrivadoDAO {
             ps.setString(4, viaje.getDestino());
             ps.setInt(5, viaje.getCantidadPasajeros());
             ps.setTimestamp(6, Timestamp.valueOf(viaje.getFechaHoraSalidaEstimada()));
+            ps.setTimestamp(7, Timestamp.valueOf(viaje.getFechaHoraLlegadaEstimada()));
+            ps.setDouble(8, viaje.getPrecio());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new BDException("Error al registrar solicitud privada: " + e.getMessage(), e);

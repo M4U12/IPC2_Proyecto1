@@ -70,22 +70,35 @@
                                                 <textarea class="form-control bg-light" id="inputDestino" name="destino" rows="2" readonly required placeholder="Arrastra el marcador rojo..."></textarea>
                                             </div>
 
-                                            <div class="row g-2 mb-4">
-                                                <div class="col-md-7">
-                                                    <label class="form-label fw-bold small">Salida Esperada</label>
-                                                    <input type="datetime-local" class="form-control" name="fecha_salida" min="<%= fechaActual%>" required>
+                                            <div class="row g-2 mb-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-bold small text-muted">Tipo de Viaje</label>
+                                                    <select class="form-select" name="tipo_viaje" id="tipo_viaje" onchange="cambiarLabelRetorno()" required>
+                                                        <option value="solo_ida">Solo Ida</option>
+                                                        <option value="ida_vuelta">Ida y Vuelta</option>
+                                                    </select>
                                                 </div>
-                                                <div class="col-md-5">
+                                                <div class="col-md-6">
                                                     <label class="form-label fw-bold small">Pasajeros</label>
                                                     <input type="number" class="form-control" name="pasajeros" min="1" required>
                                                 </div>
                                             </div>
 
+                                            <div class="row g-2 mb-4">
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-bold small">Salida Esperada</label>
+                                                    <input type="datetime-local" class="form-control" name="fecha_salida" id="fecha_salida"  onchange="document.getElementById('fecha_llegada').min = this.value;" required>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-bold small" id="label_llegada">Llegada a Destino</label>
+                                                    <input type="datetime-local" class="form-control" name="fecha_llegada" id="fecha_llegada" required>
+                                                </div>
+                                            </div>
                                             <button type="submit" class="btn btn-primary w-100 fw-bold py-2">Enviar Solicitud de Cotización</button>
                                         </form>
                                     </div>
 
-                                    <!-- Columna del Mapa (Leaflet) -->
+                                    <!-- Columna del Mapa -->
                                     <div class="col-lg-7 position-relative">
                                         <div id="mapaPrivado" style="height: 100%; min-height: 500px; width: 100%;"></div>
                                     </div>
@@ -96,6 +109,6 @@
 
                 </div>
             </div>
-        <script src="${pageContext.request.contextPath}/js/mapa.js"></script>
+            <script src="${pageContext.request.contextPath}/js/mapa.js"></script>
     </body>
 </html>

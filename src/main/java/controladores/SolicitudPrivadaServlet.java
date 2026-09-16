@@ -13,6 +13,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.time.Duration;
+import java.util.Optional;
+import modelos.Sucursal;
 
 @WebServlet(name = "SolicitudPrivadaServlet", urlPatterns = {"/Solicitar_Privado"})
 public class SolicitudPrivadaServlet extends HttpServlet {
@@ -50,20 +53,47 @@ public class SolicitudPrivadaServlet extends HttpServlet {
         try {
             ViajePrivado solicitud = new ViajePrivado();
             solicitud.setIdCliente(usuarioActivo.getIdUsuario());
-            solicitud.setIdSucursal(Integer.parseInt(request.getParameter("id_sucursal")));
-            
+            int idSucursal = Integer.parseInt(request.getParameter("id_sucursal"));
+            solicitud.setIdSucursal(idSucursal);
             solicitud.setOrigen(request.getParameter("origen"));
-            solicitud.setDestino(request.getParameter("destino"));
-            
-            solicitud.setCantidadPasajeros(Integer.parseInt(request.getParameter("pasajeros")));
+            String destino = request.getParameter("destino");
 
+            if ("ida_vuelta".equals(request.getParameter("tipo_viaje"))) {
+                destino += " (Ida y Vuelta)";
+            }
+            solicitud.setDestino(destino);
+
+            int pasajeros = Integer.parseInt(request.getParameter("pasajeros"));
+            solicitud.setCantidadPasajeros(pasajeros);
+
+    
             LocalDateTime fechaSalida = LocalDateTime.parse(request.getParameter("fecha_salida"));
+            LocalDateTime fechaLlegada = LocalDateTime.parse(request.getParameter("fecha_llegada"));
+
+            double tarifaHora = 0;
+            double tarifaPasajero = 0;
+            Optional<Sucursal> sucOpt = new SucursalDAO().buscarSucursalPorId(idSucursal);
+            if (sucOpt.isPresent()) {
+                tarifaHora = sucOpt.get().getTarifaBaseHora();
+                tarifaPasajero = sucOpt.get().getTarifaPasajero();
+            }
+
+            // calculo de las horas redondeando hacia arriba, mínimo 1 hora
+            long minutos = Duration.between(fechaSalida, fechaLlegada).toMinutes();
+            double horas = Math.ceil(minutos / 60.0);
+            if (horas < 1) {
+                horas = 1;
+            }
+
+            double precioCalculado = (horas * tarifaHora) + (pasajeros * tarifaPasajero);
+
             solicitud.setFechaHoraSalidaEstimada(fechaSalida);
+            solicitud.setFechaHoraLlegadaEstimada(fechaLlegada);
+            solicitud.setPrecio(precioCalculado);
 
-            ViajePrivadoDAO dao = new ViajePrivadoDAO();
-            dao.registrarSolicitud(solicitud);
+            new ViajePrivadoDAO().registrarSolicitud(solicitud);
 
-            sesion.setAttribute("mensajeExito", "¡Tu solicitud ha sido enviada! Un administrador la revisará pronto para asignarle un precio. Revisa la pestaña de Cotizaciones en tu Perfil.");
+            sesion.setAttribute("mensajeExito", "¡Tu solicitud ha sido enviada! Un administrador revisará la cotización sugerida pronto. Revisa la pestaña de Cotizaciones en tu Perfil.");
             response.sendRedirect(request.getContextPath() + "/Mi_Perfil");
 
         } catch (Exception e) {

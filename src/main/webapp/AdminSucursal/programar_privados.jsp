@@ -188,23 +188,25 @@
                                                     </div>
 
                                                     <div class="mb-3">
-                                                        <label class="form-label fw-bold">Fecha/Hora Llegada Estimada (Destino)</label>
-                                                        <input type="datetime-local" class="form-control" name="fecha_llegada" 
+                                                        <label class="form-label fw-bold">Fecha/Hora Llegada (O Retorno)</label>
+                                                        <input type="datetime-local" class="form-control bg-light" name="fecha_llegada" 
                                                                id="llegada_<%= vp.getIdViajePrivado()%>" 
+                                                               value="<%= vp.getFechaHoraLlegadaEstimada() != null ? vp.getFechaHoraLlegadaEstimada().format(formatoInput) : ""%>"
                                                                min="<%= vp.getFechaHoraSalidaEstimada().format(formatoInput)%>" 
                                                                onchange="calcularCotizacionEnVivo(<%= vp.getIdViajePrivado()%>, '<%= vp.getFechaHoraSalidaEstimada().format(formatoInput)%>', <%= vp.getCantidadPasajeros()%>, <%= miSucursal != null ? miSucursal.getTarifaBaseHora() : 0%>, <%= miSucursal != null ? miSucursal.getTarifaPasajero() : 0%>)" 
-                                                               required>
+                                                               readonly>
                                                     </div>
 
                                                     <div class="mb-3">
-                                                        <label class="form-label fw-bold">Precio Total a Cobrar (Q)</label>
+                                                        <label class="form-label fw-bold">Precio Sugerido a Cobrar (Q)</label>
                                                         <div class="input-group">
                                                             <span class="input-group-text fw-bold">Q.</span>
-                                                            <input type="number" step="0.01" min="0" class="form-control fw-bold" name="precio" 
+                                                            <input type="number" step="0.01" min="0" class="form-control fw-bold border-primary" name="precio" 
                                                                    id="precio_<%= vp.getIdViajePrivado()%>" 
+                                                                   value="<%= vp.getPrecio() != null ? vp.getPrecio() : 0.0%>"
                                                                    onkeypress="soloDecimales(event)" required>
                                                         </div>
-                                                        <small class="text-muted"><i class="bi bi-magic"></i> El precio se calculará automáticamente al elegir la hora de llegada.</small>
+                                                        <small class="text-muted"><i class="bi bi-info-circle"></i> Precio calculado automáticamente en base al tiempo de reserva del cliente. Puedes ajustarlo.</small>
                                                     </div>
 
                                                 </div>
@@ -316,7 +318,7 @@
                                                         <div class="form-text text-success"><i class="bi bi-info-circle"></i> Último registro en sistema: <%= kmActualBus%> km.</div>
                                                     </div>
                                                     <div class="mb-3">
-                                                        <label class="form-label fw-bold">Hora Real de Salida</label>
+                                                        <label class="form-label fw-bold">Hora Exacta de Salida</label>
                                                         <input type="datetime-local" class="form-control border-success" name="fecha_hora_salida_real" value="<%= fechaActual%>" required>
                                                     </div>
                                                 </div>
@@ -356,7 +358,7 @@
                                                         <input type="number" step="0.01" min="0" class="form-control" name="gasto_combustible" required>
                                                     </div>
                                                     <div class="mb-3">
-                                                        <label class="form-label fw-bold">Hora Real de Llegada</label>
+                                                        <label class="form-label fw-bold">Hora Exacta de Llegada</label>
                                                         <input type="datetime-local" class="form-control" name="fecha_hora_llegada_real" value="<%= fechaActual%>" required>
                                                     </div>
                                                 </div>
