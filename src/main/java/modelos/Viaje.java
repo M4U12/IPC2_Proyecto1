@@ -16,7 +16,11 @@ public class Viaje {
     private Double kilometrajeSalida;
     private Double kilometrajeLlegada;
     private Double gastoCombustible;
-    private String nombreDestino; //auxiliar para el historial
+    //auxiliares solo para listar
+    private String nombreDestino;
+    private String nombreChofer;
+    private String placaBus;
+    private double kilometrajeBusActual;
 
     public Viaje() {
     }
@@ -138,5 +142,29 @@ public class Viaje {
 
     public void setNombreDestino(String nombreDestino) {
         this.nombreDestino = nombreDestino;
+    }
+
+    public String getNombreChofer() {
+        return nombreChofer;
+    }
+
+    public void setNombreChofer(String nombreChofer) {
+        this.nombreChofer = nombreChofer;
+    }
+
+    public String getPlacaBus() {
+        return placaBus;
+    }
+
+    public void setPlacaBus(String placaBus) {
+        this.placaBus = placaBus;
+    }
+
+    public double getKilometrajeBusActual() {
+        return kilometrajeBusActual;
+    }
+
+    public void setKilometrajeBusActual(double kilometrajeBusActual) {
+        this.kilometrajeBusActual = kilometrajeBusActual;
     }
 }

@@ -156,29 +156,12 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <!-- Resuelve el nombre del destino cruzando los IDs: Viaje -> Ruta -> Sucursal -->
                                             <% if (listaViajes != null && !listaViajes.isEmpty()) {
                                                     for (Viaje v : listaViajes) {
-                                                        String nombreDestino = "Desconocido";
-                                                        if (listaRutas != null) {
-                                                            for (Ruta r : listaRutas) {
-                                                                if (r.getIdRuta() == v.getIdRuta()) {
-                                                                    if (listaSucursales != null) {
-                                                                        for (Sucursal s : listaSucursales) {
-                                                                            if (s.getIdSucursal() == r.getIdDestino()) {
-                                                                                nombreDestino = s.getNombre();
-                                                                                break;
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                    break;
-                                                                }
-                                                            }
-                                                        }
                                             %>
                                             <tr>
                                                 <td class="fw-bold text-primary"><%= v.getFechaHoraSalidaEstimada().format(formatoFechaTabla)%></td>
-                                                <td><i class="bi bi-signpost-split-fill text-secondary me-1"></i> <%= nombreDestino%></td>
+                                                <td><i class="bi bi-signpost-split-fill text-secondary me-1"></i> <%= v.getNombreDestino()%></td>
                                                 <td>#<%= v.getIdBus()%></td>
                                                 <td>#<%= v.getIdChofer()%></td>
                                                 <td>
@@ -238,7 +221,7 @@
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
-                                                        <h5 class="modal-title fw-bold">Editar Viaje hacia <%= nombreDestino%></h5>
+                                                        <h5 class="modal-title fw-bold">Editar Viaje hacia <%= v.getNombreDestino()%></h5>
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                     </div>
                                                     <form action="${pageContext.request.contextPath}/Gestionar_Viajes" method="POST">
@@ -295,28 +278,7 @@
                                         <% } %>
 
                                         <!-- Modal Iniciar Salida -->
-                                        <% if (v.getEstadoViaje() == Enums.EstadoViaje.PROGRAMADO) {
-                                                String nombreChoferSalida = "Desconocido";
-                                                String placaBusSalida = "Desconocida";
-                                                double kilometrajeAcumulado = 0.0;
-                                                if (listaChoferes != null) {
-                                                    for (Chofer c : listaChoferes) {
-                                                        if (c.getIdChofer() == v.getIdChofer()) {
-                                                            nombreChoferSalida = c.getNombre();
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                                if (listaBuses != null) {
-                                                    for (Bus b : listaBuses) {
-                                                        if (b.getIdBus() == v.getIdBus()) {
-                                                            placaBusSalida = b.getPlaca();
-                                                            kilometrajeAcumulado = b.getKilometrajeActual();
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                        %>
+                                        <% if (v.getEstadoViaje() == Enums.EstadoViaje.PROGRAMADO) {%>
                                         <div class="modal fade text-start" id="modalIniciar<%= v.getIdViaje()%>" tabindex="-1" aria-hidden="true">
                                             <div class="modal-dialog">
                                                 <div class="modal-content border-success">
@@ -329,11 +291,11 @@
                                                             <input type="hidden" name="accion" value="iniciar_viaje">
                                                             <input type="hidden" name="id_viaje" value="<%= v.getIdViaje()%>">
 
-                                                            <div class="alert alert-success small">Chofer: <b><%= nombreChoferSalida%></b> <br> Placas: <b><%= placaBusSalida%></b>.</div>
+                                                            <div class="alert alert-success small">Chofer: <b><%= v.getNombreChofer()%></b> <br> Placas: <b><%= v.getPlacaBus()%></b>.</div>
 
                                                             <div class="mb-3">
                                                                 <label class="form-label fw-bold">Kilometraje al Arrancar</label>
-                                                                <input type="number" step="0.1" min="<%= kilometrajeAcumulado%>" value="<%= kilometrajeAcumulado%>" class="form-control border-success" name="kilometraje_salida" required>
+                                                                <input type="number" step="0.1" min="<%= v.getKilometrajeBusActual()%>" value="<%= v.getKilometrajeBusActual()%>" class="form-control border-success" name="kilometraje_salida" required>
                                                             </div>
                                                             <div class="mb-3">
                                                                 <label class="form-label fw-bold">Hora Exacta de Salida</label>

@@ -152,9 +152,4 @@ public class AdminSucursalDAO {
         }
         return 0;
     }
-    
-    public String obtenerNombreSucursalDeAdmin(int id){
-        String query = "SELECT s.";
-        return "hola";
-    }
 }

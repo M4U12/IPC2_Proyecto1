@@ -44,18 +44,13 @@ public class GestionarViajesServlet extends HttpServlet {
 
         try {
             int miSucursal = usuarioActivo.getIdSucursalAsignada();
-            List<Viaje> todosLosViajes = viajeDAO.listarViajesRegularesPorSucursal(miSucursal);
-            List<Viaje> viajesActivos = new ArrayList<>();
-            for (Viaje v : todosLosViajes) {
-                if (v.getEstadoViaje() != Enums.EstadoViaje.FINALIZADO) {
-                    viajesActivos.add(v);
-                }
-            }
-            
+
+            List<Viaje> viajesActivos = viajeDAO.listarViajesActivosConDestino(miSucursal);
+
             request.setAttribute("listaBuses", busDAO.listarBusesPorSucursal(miSucursal, true));
             request.setAttribute("listaChoferes", choferDAO.listarChoferesPorSucursal(miSucursal, true));
             request.setAttribute("listaSucursales", sucursalDAO.listarSucursales());
-            request.setAttribute("listaViajes", viajesActivos);
+            request.setAttribute("listaViajes", viajesActivos); 
             request.setAttribute("listaRutas", rutaDAO.listarRutasPorSucursal(miSucursal));
 
             request.getRequestDispatcher("/AdminSucursal/programar_viajes.jsp").forward(request, response);

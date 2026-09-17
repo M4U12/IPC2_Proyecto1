@@ -69,6 +69,44 @@ public class ViajeDAO {
         return lista;
     }
 
+    public List<Viaje> listarViajesActivosConDestino(int idSucursal) throws BDException {
+        List<Viaje> lista = new ArrayList<>();
+
+        String query = "SELECT v.*, "
+                + "s.nombre AS nombre_destino, "
+                + "c.nombre AS nombre_chofer, "
+                + "b.placa AS placa_bus, "
+                + "b.kilometraje_actual AS kilometraje_bus "
+                + "FROM viajes v "
+                + "INNER JOIN rutas r ON v.id_ruta = r.id_ruta "
+                + "INNER JOIN sucursales s ON r.id_destino = s.id_sucursal "
+                + "INNER JOIN choferes c ON v.id_chofer = c.id_chofer "
+                + "INNER JOIN buses b ON v.id_bus = b.id_bus "
+                + "WHERE r.id_origen = ? AND v.estado_viaje <> 'FINALIZADO' "
+                + "ORDER BY v.fecha_hora_salida_estimada ASC";
+
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+
+            ps.setInt(1, idSucursal);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Viaje v = extraerViajeDeResultSet(rs);
+
+                    v.setNombreDestino(rs.getString("nombre_destino"));
+                    v.setNombreChofer(rs.getString("nombre_chofer"));
+                    v.setPlacaBus(rs.getString("placa_bus"));
+                    v.setKilometrajeBusActual(rs.getDouble("kilometraje_bus"));
+
+                    lista.add(v);
+                }
+            }
+        } catch (SQLException e) {
+            throw new BDException("Error al listar viajes activos: " + e.getMessage(), e);
+        }
+        return lista;
+    }
+
     public List<Viaje> listarViajesDisponibles() throws BDException {
         List<Viaje> lista = new ArrayList<>();
         String query = "SELECT * FROM viajes WHERE estado_viaje = 'PROGRAMADO' ORDER BY fecha_hora_salida_estimada ASC";
