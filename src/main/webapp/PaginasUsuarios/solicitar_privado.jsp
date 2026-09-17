@@ -46,14 +46,14 @@
                                         <form action="${pageContext.request.contextPath}/Solicitar_Privado" method="POST">
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold small text-muted">¿Qué sucursal administrará tu viaje?</label>
-                                                <select class="form-select" name="id_sucursal" required>
+                                                <select class="form-select" name="id_sucursal" id="id_sucursal" onchange="calcularCotizacionCliente()" required>
                                                     <option value="" selected disabled>Selecciona una sucursal...</option>
                                                     <%
                                                         List<Sucursal> sucursales = (List<Sucursal>) request.getAttribute("listaSucursales");
                                                         if (sucursales != null) {
                                                             for (Sucursal s : sucursales) {
                                                     %>
-                                                    <option value="<%= s.getIdSucursal()%>"><%= s.getNombre()%> - <%= s.getDireccion()%></option>
+                                                    <option value="<%= s.getIdSucursal()%>" data-tarifa-hora="<%= s.getTarifaBaseHora()%>" data-tarifa-pasajero="<%= s.getTarifaPasajero()%>"><%= s.getNombre()%> - <%= s.getDireccion()%></option>
                                                     <%      }
                                                         }
                                                     %>
@@ -80,18 +80,24 @@
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label class="form-label fw-bold small">Pasajeros</label>
-                                                    <input type="number" class="form-control" name="pasajeros" min="1" required>
+                                                    <input type="number" class="form-control" name="pasajeros" id="pasajeros" min="1" oninput="calcularCotizacionCliente()" required>
                                                 </div>
                                             </div>
 
                                             <div class="row g-2 mb-4">
                                                 <div class="col-md-6">
                                                     <label class="form-label fw-bold small">Salida Esperada</label>
-                                                    <input type="datetime-local" class="form-control" name="fecha_salida" id="fecha_salida"  onchange="document.getElementById('fecha_llegada').min = this.value;" required>
+                                                    <input type="datetime-local" class="form-control" name="fecha_salida" id="fecha_salida"  onchange="document.getElementById('fecha_llegada').min = this.value; calcularCotizacionCliente();" required>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label class="form-label fw-bold small" id="label_llegada">Llegada a Destino</label>
-                                                    <input type="datetime-local" class="form-control" name="fecha_llegada" id="fecha_llegada" required>
+                                                    <input type="datetime-local" class="form-control" name="fecha_llegada" id="fecha_llegada" onchange="calcularCotizacionCliente()" required> 
+                                                </div>
+                                                <div id="caja_precio_cliente" class="alert alert-info py-2 mb-3 shadow-sm border-info" style="display: none;">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span class="fw-bold small text-info-emphasis"><i class="bi bi-info-circle"></i> Costo Estimado:</span>
+                                                        <span class="fs-5 fw-bold text-dark">Q.<span id="precio_cliente_span">0.00</span></span>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <button type="submit" class="btn btn-primary w-100 fw-bold py-2">Enviar Solicitud de Cotización</button>

@@ -86,6 +86,9 @@ public class ViajePrivadoDAO {
 
                     double kmLlegada = rs.getDouble("kilometraje_llegada");
                     vp.setKilometrajeLlegada(rs.wasNull() ? null : kmLlegada);
+                    
+                    double gastoCombustible = rs.getDouble("gasto_combustible");
+                    vp.setGastoCombustible(rs.wasNull() ? null : gastoCombustible);
 
                     lista.add(vp);
                 }

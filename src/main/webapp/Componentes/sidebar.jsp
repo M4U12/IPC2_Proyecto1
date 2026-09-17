@@ -41,6 +41,7 @@
             <a href="${pageContext.request.contextPath}/Gestionar_Choferes">Gestión de Choferes</a>
             <a href="${pageContext.request.contextPath}/Gestionar_Buses">Gestión de Buses</a>
             <a href="${pageContext.request.contextPath}/Gestionar_Rutas">Rutas</a>
+            <a href="${pageContext.request.contextPath}/Historial_Viajes">Registro de Viajes Finalizados</a>
             <a href="${pageContext.request.contextPath}/Gestionar_Viajes">Viajes Regulares</a>
             <a href="${pageContext.request.contextPath}/Gestionar_Privados">Viajes Privados</a>
             <a href="${pageContext.request.contextPath}/Reporte_Buses_Sucursal">Reporte de Buses</a>

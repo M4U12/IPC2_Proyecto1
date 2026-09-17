@@ -58,7 +58,12 @@
                                             <i class="bi bi-pencil-square"></i> Editar
                                         </button>
                                     </div>
-                                    <p class="text-muted mb-0">DPI: <%= usuario.getDpi()%> | NIT: <%= usuario.getNit()%></p>
+                                    <p class="text-muted mb-1">DPI: <%= usuario.getDpi()%> | NIT: <%= usuario.getNit()%></p>
+                                    <p class="text-muted small mb-0">
+                                        <i class="bi bi-telephone-fill text-primary"></i> <%= usuario.getTelefono() != null ? usuario.getTelefono() : "No registrado"%> 
+                                        &nbsp;|&nbsp; 
+                                        <i class="bi bi-geo-alt-fill text-danger"></i> <%= usuario.getDireccion() != null && !usuario.getDireccion().trim().isEmpty() ? usuario.getDireccion() : "Sin dirección"%>
+                                    </p>
                                 </div>
                             </div>
                             <div class="text-end bg-light px-4 py-2 rounded-3 shadow-sm border border-white">

@@ -17,6 +17,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.Optional;
 import modelos.Sucursal;
+import java.util.ArrayList;
+import java.util.List;
+import modelos.ViajePrivado;
 
 @WebServlet(name = "GestionarPrivadosServlet", urlPatterns = {"/Gestionar_Privados"})
 public class GestionarPrivadosServlet extends HttpServlet {
@@ -37,8 +40,16 @@ public class GestionarPrivadosServlet extends HttpServlet {
             BusDAO busDAO = new BusDAO();
             ChoferDAO choferDAO = new ChoferDAO();
             SucursalDAO sucursalDAO = new SucursalDAO();
+            
+            List<ViajePrivado> todosPrivados = vpDAO.listarPorSucursal(miSucursal);
+            List<ViajePrivado> privadosActivos = new ArrayList<>();
+            for (ViajePrivado vp : todosPrivados) {
+                if (vp.getEstado() != Enums.EstadoViaje.FINALIZADO) {
+                    privadosActivos.add(vp);
+                }
+            }
 
-            request.setAttribute("listaPrivados", vpDAO.listarPorSucursal(miSucursal));
+            request.setAttribute("listaPrivados", privadosActivos);
             request.setAttribute("listaBuses", busDAO.listarBusesPorSucursal(miSucursal, true));
             request.setAttribute("listaChoferes", choferDAO.listarChoferesPorSucursal(miSucursal, true));
 

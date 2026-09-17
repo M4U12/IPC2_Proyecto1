@@ -41,9 +41,21 @@ public class GestionarRutasServlet extends HttpServlet {
 
             List<Ruta> listaRutas = rutaDAO.listarRutasPorSucursal(idMiSucursal);
             List<Sucursal> listaSucursales = sucursalDAO.listarSucursales(); // Para llenar el select de destinos
+            
+            //nombre exacto de la sucursal del administrador
+            String nombreSucursal = "Mi Sucursal";
+            if (listaSucursales != null) {
+                for (Sucursal s : listaSucursales) {
+                    if (s.getIdSucursal() == idMiSucursal) {
+                        nombreSucursal = s.getNombre();
+                        break;
+                    }
+                }
+            }
 
             request.setAttribute("listaRutas", listaRutas);
             request.setAttribute("listaSucursales", listaSucursales);
+            request.setAttribute("nombreSucursal", nombreSucursal);
         } catch (BDException e) {
             request.setAttribute("error", "Error al cargar los datos: " + e.getMessage());
         }

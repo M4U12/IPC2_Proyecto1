@@ -35,38 +35,35 @@ public class LoginServlet extends HttpServlet {
 
         try {
             Optional<Usuario> usuarioOpt = usuarioDAO.buscarPorDpi(dpi);
-
-            if (usuarioOpt.isPresent()) {
+            //validación
+            if (usuarioOpt.isPresent() && usuarioOpt.get().getPassword().equals(password)) {
                 Usuario usuario = usuarioOpt.get();
 
-                if (usuario.getPassword().equals(password)) {
-                    if (!usuario.isEstado()) {
-                        request.setAttribute("error", "Su cuenta se encuentra desactivada.");
+                // verificación de estado de cuenta
+                if (!usuario.isEstado()) {
+                    request.setAttribute("error", "Su cuenta se encuentra desactivada. Contacte al administrador.");
+                    request.getRequestDispatcher("LoginyRegistro/login.jsp").forward(request, response);
+                    return;
+                }
+
+                Enums.RolUsuario rol = usuario.getRol();
+                
+                if (rol == Enums.RolUsuario.ADMINISTRADOR_SUCURSAL) {
+                    AdminSucursalDAO adminDAO = new AdminSucursalDAO();
+                    int idSucursal = adminDAO.obtenerSucursalDeAdmin(usuario.getIdUsuario());
+                    if (idSucursal == 0) {
+                        request.setAttribute("error", "Acceso denegado: No tienes ninguna sucursal asignada para operar.");
                         request.getRequestDispatcher("LoginyRegistro/login.jsp").forward(request, response);
                         return;
                     }
-
-
-                    Enums.RolUsuario rol = usuario.getRol();
-                    if (rol == Enums.RolUsuario.ADMINISTRADOR_SUCURSAL) {
-                        AdminSucursalDAO adminDAO = new AdminSucursalDAO();
-                        int idSucursal = adminDAO.obtenerSucursalDeAdmin(usuario.getIdUsuario());
-                        if (idSucursal == 0) {
-                            request.setAttribute("error", "Acceso denegado: No tienes ninguna sucursal asignada para operar.");
-                            request.getRequestDispatcher("LoginyRegistro/login.jsp").forward(request, response);
-                            return;
-                        }
-                        usuario.setIdSucursalAsignada(idSucursal);
-                    }
-                    HttpSession sesion = request.getSession();
-                    sesion.setAttribute("usuarioLogueado", usuario);
-                    response.sendRedirect("index.jsp");
-                } else {
-                    request.setAttribute("error", "Contraseña incorrecta. Intente de nuevo.");
-                    request.getRequestDispatcher("LoginyRegistro/login.jsp").forward(request, response);
+                    usuario.setIdSucursalAsignada(idSucursal);
                 }
+                HttpSession sesion = request.getSession();
+                sesion.setAttribute("usuarioLogueado", usuario);
+                response.sendRedirect("index.jsp");
+
             } else {
-                request.setAttribute("error", "El DPI ingresado no está registrado.");
+                request.setAttribute("error", "Credenciales incorrectas. Verifique su DPI y contraseña.");
                 request.getRequestDispatcher("LoginyRegistro/login.jsp").forward(request, response);
             }
 

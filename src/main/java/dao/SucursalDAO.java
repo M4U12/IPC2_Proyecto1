@@ -81,20 +81,19 @@ public class SucursalDAO {
 
     public List<Sucursal> listarSucursales() throws BDException {
         List<Sucursal> listaSucursales = new ArrayList<>();
-        String query = "SELECT id_sucursal, nombre, direccion, telefono, latitud, longitud, tarifa_base_hora, tarifa_pasajero FROM sucursales";
+        String query = "SELECT * FROM sucursales";
 
         try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                Sucursal sucursal = new Sucursal(
-                        rs.getInt("id_sucursal"),
-                        rs.getString("nombre"),
-                        rs.getString("direccion"),
-                        rs.getString("telefono"),
-                        rs.getDouble("latitud"),
-                        rs.getDouble("longitud")
-                );
-                listaSucursales.add(sucursal);
+                Sucursal s = new Sucursal();
+                s.setIdSucursal(rs.getInt("id_sucursal"));
+                s.setNombre(rs.getString("nombre"));
+                s.setDireccion(rs.getString("direccion"));
+                s.setTarifaBaseHora(rs.getDouble("tarifa_base_hora"));
+                s.setTarifaPasajero(rs.getDouble("tarifa_pasajero"));
+
+                listaSucursales.add(s);
             }
 
         } catch (SQLException e) {

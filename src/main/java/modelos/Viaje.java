@@ -16,6 +16,7 @@ public class Viaje {
     private Double kilometrajeSalida;
     private Double kilometrajeLlegada;
     private Double gastoCombustible;
+    private String nombreDestino; //auxiliar para el historial
 
     public Viaje() {
     }
@@ -129,5 +130,13 @@ public class Viaje {
 
     public void setGastoCombustible(Double gastoCombustible) {
         this.gastoCombustible = gastoCombustible;
+    }
+
+    public String getNombreDestino() {
+        return nombreDestino;
+    }
+
+    public void setNombreDestino(String nombreDestino) {
+        this.nombreDestino = nombreDestino;
     }
 }

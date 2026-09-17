@@ -52,4 +52,46 @@ function cambiarLabelRetorno() {
         document.getElementById('label_llegada').innerText = 'Llegada a Destino';
         document.getElementById('label_llegada').classList.replace('text-primary', 'text-dark');
     }
+
+
+}
+
+function calcularCotizacionCliente() {
+    let selectSucursal = document.getElementById('id_sucursal');
+    let inputPasajeros = document.getElementById('pasajeros');
+    let inputSalida = document.getElementById('fecha_salida');
+    let inputLlegada = document.getElementById('fecha_llegada');
+
+    let cajaPrecio = document.getElementById('caja_precio_cliente');
+    let spanPrecio = document.getElementById('precio_cliente_span');
+
+    // solo calcular si los 4 campos obligatorios ya están llenos
+    if (selectSucursal.value && inputPasajeros.value && inputSalida.value && inputLlegada.value) {
+
+        let opcion = selectSucursal.options[selectSucursal.selectedIndex];
+        let tarifaBase = parseFloat(opcion.getAttribute('data-tarifa-hora')) || 0;
+        let tarifaPasajero = parseFloat(opcion.getAttribute('data-tarifa-pasajero')) || 0;
+        let pasajeros = parseInt(inputPasajeros.value) || 0;
+
+        let fechaSalida = new Date(inputSalida.value);
+        let fechaLlegada = new Date(inputLlegada.value);
+        let diferenciaMilisegundos = fechaLlegada - fechaSalida;
+
+        // fecha de llegada sea lógicamente después de la salida
+        if (diferenciaMilisegundos > 0) {
+
+            let horas = Math.ceil(diferenciaMilisegundos / (1000 * 60 * 60));
+            if (horas < 1)
+                horas = 1;
+
+            let precioEstimado = (pasajeros * tarifaPasajero) + (horas * tarifaBase);
+
+            spanPrecio.innerText = precioEstimado.toFixed(2);
+            cajaPrecio.style.display = 'block'; // panel de precio
+        } else {
+            cajaPrecio.style.display = 'none'; // Oculta si la fecha es inválida
+        }
+    } else {
+        cajaPrecio.style.display = 'none';
+    }
 }

@@ -43,6 +43,32 @@ public class ViajeDAO {
         return listaViajes;
     }
 
+    public List<Viaje> listarHistorialRegulares(int idSucursal) throws BDException {
+        List<Viaje> lista = new ArrayList<>();
+        String query = "SELECT v.*, s.nombre AS nombre_destino "
+                + "FROM viajes v "
+                + "INNER JOIN rutas r ON v.id_ruta = r.id_ruta "
+                + "INNER JOIN sucursales s ON r.id_destino = s.id_sucursal "
+                + "WHERE r.id_origen = ? AND v.estado_viaje = 'FINALIZADO' "
+                + "ORDER BY v.fecha_hora_llegada_real DESC";
+
+        try (Connection connection = conexionDB.getConection(); PreparedStatement ps = connection.prepareStatement(query)) {
+
+            ps.setInt(1, idSucursal);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Viaje v = extraerViajeDeResultSet(rs);
+                    v.setNombreDestino(rs.getString("nombre_destino"));
+                    lista.add(v);
+                }
+            }
+        } catch (SQLException e) {
+            throw new BDException("Error al listar el historial de regulares: " + e.getMessage(), e);
+        }
+        return lista;
+    }
+
     public List<Viaje> listarViajesDisponibles() throws BDException {
         List<Viaje> lista = new ArrayList<>();
         String query = "SELECT * FROM viajes WHERE estado_viaje = 'PROGRAMADO' ORDER BY fecha_hora_salida_estimada ASC";
@@ -377,6 +403,6 @@ public class ViajeDAO {
         } catch (SQLException e) {
             throw new BDException("Error al buscar el viaje regular activo: " + e.getMessage(), e);
         }
-        return Optional.empty(); 
+        return Optional.empty();
     }
 }

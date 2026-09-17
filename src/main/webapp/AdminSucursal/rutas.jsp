@@ -17,7 +17,8 @@
                 <div class="col-md-9 col-lg-10 p-5">
                     <div class="p-4 bg-white rounded-4 shadow-sm mb-4">
                         <h2 class="fw-bold">Rutas de Viaje</h2>
-                        <p class="text-muted">Define los trayectos comerciales que inician en tu sucursal.</p>
+                        <span class="text-muted fs-5 fw-normal"> <%= request.getAttribute("nombreSucursal")%></span>
+                        <p class="text-muted mb-0">Define los trayectos comerciales que inician en tu sucursal.</p>
 
                         <% if (session.getAttribute("mensajeExito") != null) {%>
                         <div class="alert alert-success"><%= session.getAttribute("mensajeExito")%></div>
@@ -45,7 +46,7 @@
 
                                     <div class="mb-3">
                                         <label class="form-label text-muted small fw-bold">Origen</label>
-                                        <input type="text" class="form-control bg-light text-secondary" value="Mi Sucursal Actual" readonly>
+                                        <input type="text" class="form-control bg-light text-secondary" value="<%= request.getAttribute("nombreSucursal") %>" readonly>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Destino</label>
